@@ -1,4 +1,5 @@
 galaxy_info:
+  role_name: nvidia-driver
   author: Luke Yeager
   description: Install the NVIDIA driver
   license: 3-Clause BSD
