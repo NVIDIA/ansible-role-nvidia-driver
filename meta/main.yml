@@ -2,13 +2,14 @@ galaxy_info:
   author: Luke Yeager
   description: Install the NVIDIA driver
   license: 3-Clause BSD
-  min_ansible_version: 2.4
+  min_ansible_version: 2.7
 
   platforms:
     - name: Ubuntu
       versions:
-        - '18.04'
-    - name: CentOS
+        - 'xenial'
+        - 'bionic'
+    - name: EL
       versions:
         - '7'
 
