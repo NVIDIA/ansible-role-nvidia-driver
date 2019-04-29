@@ -3,10 +3,6 @@ nvidia_driver_package_version: ''
 nvidia_driver_persistence_mode_on: yes
 nvidia_driver_skip_reboot: no
 
-#
-# Settings for airgapped systems
-#
-
 # RedHat family
 nvidia_driver_rhel_epel_repo_baseurl: "https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"
 nvidia_driver_rhel_epel_repo_gpgkey: "https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
