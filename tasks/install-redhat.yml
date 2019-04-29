@@ -7,9 +7,7 @@
     gpgkey: "{{ nvidia_driver_rhel_epel_repo_gpgkey }}"
 
 - name: install dependencies
-  yum:
-    name: dkms
-    state: latest
+  yum: name=dkms
 
 - name: add repo
   yum_repository:
