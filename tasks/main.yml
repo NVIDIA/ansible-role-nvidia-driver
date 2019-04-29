@@ -5,22 +5,12 @@
     state: absent
   ignore_errors: true
 
-- name: ubuntu pre-install tasks
-  include_tasks: ubuntu-pre-install.yml
+- name: ubuntu install tasks
+  include_tasks: install-ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
 
-- name: redhat family pre-install tasks
-  include_tasks: redhat-pre-install.yml
-  when: ansible_os_family == 'RedHat'
-
-- name: install driver packages
-  package:
-    name: "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
-    state: present
-  register: install_driver
-
-- name: redhat family post-install tasks
-  include_tasks: redhat-post-install.yml
+- name: redhat family install tasks
+  include_tasks: install-redhat.yml
   when: ansible_os_family == 'RedHat'
 
 - name: create persistenced override dir
@@ -45,6 +35,7 @@
   systemd:
     name: nvidia-persistenced
     enabled: yes
+  when: nvidia_driver_package_state != 'absent'
 
 - name: reboot after driver install
   reboot:
