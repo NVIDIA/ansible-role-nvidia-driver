@@ -1,6 +1,7 @@
 galaxy_info:
   role_name: nvidia_driver
   author: Luke Yeager
+  company: NVIDIA
   description: Install the NVIDIA driver
   license: 3-Clause BSD
   min_ansible_version: 2.7
@@ -16,4 +17,5 @@ galaxy_info:
 
   galaxy_tags:
     - 'nvidia'
+    - 'cuda'
     - 'driver'
