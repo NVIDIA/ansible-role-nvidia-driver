@@ -8,11 +8,14 @@
   apt_key:
     url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
     id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
 
 - name: add repo
   apt_repository:
     repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
     update_cache: yes
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: install driver packages
   apt:
@@ -21,3 +24,4 @@
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
     purge: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
