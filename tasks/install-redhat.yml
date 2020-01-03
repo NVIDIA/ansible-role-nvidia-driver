@@ -18,7 +18,7 @@
 
 - name: install driver packages
   yum:
-    name: "{{ nvidia_driver_package_version | ternary('cuda-drivers='+nvidia_driver_package_version, 'cuda-drivers') }}"
+    name: "{{ nvidia_driver_package_version | ternary('nvidia-driver-latest-dkms='+nvidia_driver_package_version, 'nvidia-driver-latest-dkms') }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver
