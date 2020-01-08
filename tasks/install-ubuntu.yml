@@ -4,6 +4,14 @@
     repo: ppa:graphics-drivers/ppa
     state: absent
 
+- name: add pin file
+  copy:
+    src: "cuda-ubuntu.pin"
+    dest: "/etc/apt/preferences.d/cuda-repository-pin-600"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
 - name: add key
   apt_key:
     url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
