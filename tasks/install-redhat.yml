@@ -6,6 +6,7 @@
     baseurl: "{{ nvidia_driver_rhel_epel_repo_baseurl }}"
     gpgkey: "{{ nvidia_driver_rhel_epel_repo_gpgkey }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
 
 - name: install dependencies
   yum: name=dkms
@@ -17,6 +18,7 @@
     baseurl: "{{ nvidia_driver_rhel_cuda_repo_baseurl }}"
     gpgkey: "{{ nvidia_driver_rhel_cuda_repo_gpgkey }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
 
 - name: install driver packages
   yum:
