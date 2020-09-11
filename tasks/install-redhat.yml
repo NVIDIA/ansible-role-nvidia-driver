@@ -26,6 +26,8 @@
         - "kernel-debug-devel"
       state: latest
     environment: "{{proxy_env if proxy_env is defined else {}}}"
+  - name: reboot to pick up the new kernel
+    reboot:
 
 - name: add epel repo
   yum_repository:
