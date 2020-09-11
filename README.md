@@ -22,6 +22,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 
 ## Role variables
 
+
 | Variable | Default value | Description |
 | -------- | ------------- | ----------- |
 | `nvidia_driver_package_state` | `"present"` | Package state for NVIDIA driver packages |
@@ -33,6 +34,9 @@ $ ansible-galaxy install nvidia.nvidia_driver
 
 ### Red Hat specific variables
 
+
+| Variable | Default value | Description |
+| -------- | ------------- | ----------- |
 | `nvidia_driver_rhel_epel_repo_baseurl` | `"https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"` | Base URL to use for EPEL repo |
 | `nvidia_driver_rhel_epel_repo_gpgkey` | `"https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"` | GPG key for the EPEL repo |
 | `nvidia_driver_rhel_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"` | Base URL to use for CUDA repo |
@@ -40,6 +44,9 @@ $ ansible-galaxy install nvidia.nvidia_driver
 
 ### Ubuntu specific variables
 
+
+| Variable | Default value | Description |
+| -------- | ------------- | ----------- |
 | `nvidia_driver_ubuntu_cuda_repo_baseurl` | `"http://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_url` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"` | GPG key for the CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_id` | `"7fa2af80"` | GPG key ID for the CUDA repo |
