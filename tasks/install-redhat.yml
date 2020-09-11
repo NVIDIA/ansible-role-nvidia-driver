@@ -1,4 +1,32 @@
 ---
+# We have to do this because the CentOS mirrors don't keep kernel-headers, etc
+# for older kernels.
+- name: ensure we have kernel-headers installed for the current kernel
+  block:
+  - name: attempt to install kernel support packages for current version
+    yum:
+      name: "{{ item }}-{{ ansible_kernel }}"
+      state: present
+    with_items:
+    - "kernel-headers"
+    - "kernel-tools"
+    - "kernel-tools-libs"
+    - "kernel-devel"
+    - "kernel-debug-devel"
+    environment: "{{proxy_env if proxy_env is defined else {}}}"
+  rescue:
+  - name: update the kernel to latest version so we have a supported version
+    yum:
+      name:
+        - "kernel"
+        - "kernel-headers"
+        - "kernel-tools"
+        - "kernel-tools-libs"
+        - "kernel-devel"
+        - "kernel-debug-devel"
+      state: latest
+    environment: "{{proxy_env if proxy_env is defined else {}}}"
+
 - name: add epel repo
   yum_repository:
     name: epel
@@ -26,39 +54,3 @@
   register: install_driver
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-# The driver package pulls in the latest kernel-headers package, but not the
-# latest kernel. Check to see if there is a mismatch.
-
-- name: check kernel versions
-  yum:
-    list: kernel
-  register: yum_list
-
-- name: register installed kernel version
-  debug:
-    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
-  register: kernel_version
-
-- name: check kernel-headers versions
-  yum:
-    list: kernel-headers
-  register: yum_list
-
-- name: register installed kernel-headers version
-  debug:
-    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
-  register: kernel_headers_version
-
-- name: update kernel if headers don't match
-  yum:
-    name:
-      - kernel
-      - kernel-tools
-      - kernel-tools-libs
-      - kernel-devel
-      - kernel-debug-devel
-      - kernel-headers
-    state: latest
-  register: kernel_update
-  when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
