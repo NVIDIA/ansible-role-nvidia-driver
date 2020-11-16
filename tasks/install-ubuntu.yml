@@ -12,4 +12,4 @@
     purge: "{{ nvidia_driver_package_state == 'absent' }}"
   with_items: "{{ nvidia_driver_ubuntu_packages }}"
   register: install_driver
-  envrionment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
