@@ -64,6 +64,8 @@ $ ansible-galaxy install nvidia.nvidia_driver
 Currently, this role supports the following Linux distributions:
 
 * NVIDIA DGX OS 4
+* NVIDIA DGX OS 5
 * Ubuntu 18.04 LTS
+* Ubuntu 20.04 LTS
 * CentOS 7
 * Red Hat Enterprise Linux 7
