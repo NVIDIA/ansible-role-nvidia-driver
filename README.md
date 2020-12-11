@@ -26,6 +26,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 | Variable | Default value | Description |
 | -------- | ------------- | ----------- |
 | `nvidia_driver_package_state` | `"present"` | Package state for NVIDIA driver packages |
+| `nvidia_driver_major_package_version` | `""` | Major version to install. e.g. 450. |
 | `nvidia_driver_package_version` | `""` | Package version to install. Note that this should match the actual version of the deb or RPM package to be installed. |
 | `nvidia_driver_persistence_mode_on` | `yes` | Whether to enable persistence mode (boolean) |
 | `nvidia_driver_skip_reboot` | `no` | Whether to skip rebooting the node during the install |
