@@ -45,12 +45,19 @@ $ ansible-galaxy install nvidia.nvidia_driver
 
 ### Ubuntu specific variables
 
+For Ubuntu installs, you have the choice of installing from the Canonical repositories and the NVIDIA CUDA repositories.
+
+By default, the Canonical repositories will be used, and the driver installed will be the headless server driver.
 
 | Variable | Default value | Description |
 | -------- | ------------- | ----------- |
+| `nvidia_driver_ubuntu_install_from_cuda_repo` | `no` | Flag whether to use the CUDA repo |
+| `nvidia_driver_ubuntu_branch` | `450` | Driver branch to use for the install |
+| `nvidia_driver_ubuntu_packages` | `["nvidia-headless-450-server", "nvidia-headless-450-utils"]` | Package names to install from Canonical repo |
 | `nvidia_driver_ubuntu_cuda_repo_baseurl` | `"http://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_url` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"` | GPG key for the CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_id` | `"7fa2af80"` | GPG key ID for the CUDA repo |
+| `nvidia_driver_ubuntu_cuda_package` | `"cuda-drivers"` | Package name to install from CUDA repo |
 
 ## Example playbook
 
@@ -65,6 +72,8 @@ $ ansible-galaxy install nvidia.nvidia_driver
 Currently, this role supports the following Linux distributions:
 
 * NVIDIA DGX OS 4
+* NVIDIA DGX OS 5
 * Ubuntu 18.04 LTS
+* Ubuntu 20.04 LTS
 * CentOS 7
 * Red Hat Enterprise Linux 7
