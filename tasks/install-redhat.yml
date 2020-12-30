@@ -5,14 +5,13 @@
   block:
   - name: attempt to install kernel support packages for current version
     yum:
-      name: "{{ item }}-{{ ansible_kernel }}"
+      name:
+        - "kernel-headers-{{ ansible_kernel }}
+        - "kernel-tools-{{ ansible_kernel }}"
+        - "kernel-tools-libs-{{ ansible_kernel }}"
+        - "kernel-devel-{{ ansible_kernel }}"
+        - "kernel-debug-devel-{{ ansible_kernel }}"
       state: present
-    with_items:
-    - "kernel-headers"
-    - "kernel-tools"
-    - "kernel-tools-libs"
-    - "kernel-devel"
-    - "kernel-debug-devel"
     environment: "{{proxy_env if proxy_env is defined else {}}}"
   rescue:
   - name: update the kernel to latest version so we have a supported version
