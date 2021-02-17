@@ -6,7 +6,7 @@
   - name: attempt to install kernel support packages for current version
     yum:
       name:
-        - "kernel-headers-{{ ansible_kernel }}
+        - "kernel-headers-{{ ansible_kernel }}"
         - "kernel-tools-{{ ansible_kernel }}"
         - "kernel-tools-libs-{{ ansible_kernel }}"
         - "kernel-devel-{{ ansible_kernel }}"
