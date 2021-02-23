@@ -37,8 +37,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 
 | Variable | Default value | Description |
 | -------- | ------------- | ----------- |
-| `nvidia_driver_rhel_epel_repo_baseurl` | `"https://download.fedoraproject.org/pub/epel/$releasever/$basearch/"` | Base URL to use for EPEL repo |
-| `nvidia_driver_rhel_epel_repo_gpgkey` | `"https://epel.mirror.constant.com//RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"` | GPG key for the EPEL repo |
+| `epel_package` | `"https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"` | Package to install to enable EPEL |
 | `nvidia_driver_rhel_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"` | Base URL to use for CUDA repo |
 | `nvidia_driver_rhel_cuda_repo_gpgkey` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/7fa2af80.pub"` | GPG key for the CUDA repo |
 
