@@ -26,6 +26,7 @@ nvidia_driver_ubuntu_branch: "450"
 nvidia_driver_ubuntu_packages:
 - "nvidia-headless-{{ nvidia_driver_ubuntu_branch }}-server"
 - "nvidia-utils-{{ nvidia_driver_ubuntu_branch }}-server"
+- "nvidia-headless-no-dkms-{{ nvidia_driver_ubuntu_branch }}-server"
 
 # Installing with CUDA repositories
 nvidia_driver_ubuntu_cuda_repo_gpgkey_url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"
