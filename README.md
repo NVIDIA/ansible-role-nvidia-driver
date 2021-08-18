@@ -59,10 +59,26 @@ By default, the Canonical repositories will be used, and the driver installed wi
 
 ## Example playbook
 
+Edit the inventory.ini to add the GPU nodes.
+
 ```
 - hosts: gpu_nodes
   roles:
   - nvidia.nvidia_driver
+```
+
+Save this in play.yml and use the following command to run the play book:
+
+```
+ansible-playbook -i env/invenstory.ini -u root play.yml `
+```
+
+
+## Testing the installation
+Run this play to test the installation:
+
+```
+ansible-playbook -i env/inventory.ini -u root tests/playbook.yml`
 ```
 
 ## Supported distributions
