@@ -5,6 +5,11 @@
     state: absent
   ignore_errors: true
 
+- name: Blacklist the nouveau driver module
+  community.general.kernel_blacklist:
+    name: nouveau
+    state: present
+
 - name: ubuntu install tasks
   include_tasks: install-ubuntu.yml
   when: ansible_distribution == 'Ubuntu'
