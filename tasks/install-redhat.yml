@@ -28,6 +28,11 @@
   - name: reboot to pick up the new kernel
     reboot:
 
+- name: add epel repo gpg key
+  rpm_key:
+    key: "{{ epel_repo_key }}"
+    state: present
+
 - name: add epel repo
   become: true
   yum:
