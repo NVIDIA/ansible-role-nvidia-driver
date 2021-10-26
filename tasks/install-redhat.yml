@@ -1,10 +1,44 @@
 ---
+# We have to do this because the CentOS mirrors don't keep kernel-headers, etc
+# for older kernels.
+- name: ensure we have kernel-headers installed for the current kernel
+  block:
+  - name: attempt to install kernel support packages for current version
+    yum:
+      name:
+        - "kernel-headers-{{ ansible_kernel }}"
+        - "kernel-tools-{{ ansible_kernel }}"
+        - "kernel-tools-libs-{{ ansible_kernel }}"
+        - "kernel-devel-{{ ansible_kernel }}"
+        - "kernel-debug-devel-{{ ansible_kernel }}"
+      state: present
+    environment: "{{proxy_env if proxy_env is defined else {}}}"
+  rescue:
+  - name: update the kernel to latest version so we have a supported version
+    yum:
+      name:
+        - "kernel"
+        - "kernel-headers"
+        - "kernel-tools"
+        - "kernel-tools-libs"
+        - "kernel-devel"
+        - "kernel-debug-devel"
+      state: latest
+    environment: "{{proxy_env if proxy_env is defined else {}}}"
+  - name: reboot to pick up the new kernel
+    reboot:
+
+- name: add epel repo gpg key
+  rpm_key:
+    key: "{{ epel_repo_key }}"
+    state: present
+
 - name: add epel repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: "{{ nvidia_driver_rhel_epel_repo_baseurl }}"
-    gpgkey: "{{ nvidia_driver_rhel_epel_repo_gpgkey }}"
+  become: true
+  yum:
+    name: 
+      - "{{ epel_package }}"
+    state: latest
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
 - name: install dependencies
@@ -18,47 +52,27 @@
     gpgkey: "{{ nvidia_driver_rhel_cuda_repo_gpgkey }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
 
-- name: install driver packages
+- name: install driver packages RHEL/CentOS 7 and older
   yum:
     name: "{{ nvidia_driver_package_version | ternary('nvidia-driver-latest-dkms-'+nvidia_driver_package_version, 'nvidia-driver-latest-dkms') }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
+  register: install_driver_rhel7
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: ansible_distribution_major_version < '8'
+
+- name: install driver packages RHEL/CentOS 8 and newer
+  dnf:
+    name: "{{ nvidia_driver_package_version | ternary('@nvidia-driver:'+nvidia_driver_package_version, '@nvidia-driver:latest-dkms') }}"
+    state: "{{ nvidia_driver_package_state }}"
+    autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
+  register: install_driver_rhel8
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: ansible_distribution_major_version > '7'
+
+- name: Set install_driver.changed var for RHEL 7/8
+  debug:
+      msg: Driver installed for RHEL
+  when: install_driver_rhel7.changed or install_driver_rhel8.changed
   register: install_driver
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
-
-# The driver package pulls in the latest kernel-headers package, but not the
-# latest kernel. Check to see if there is a mismatch.
-
-- name: check kernel versions
-  yum:
-    list: kernel
-  register: yum_list
-
-- name: register installed kernel version
-  debug:
-    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
-  register: kernel_version
-
-- name: check kernel-headers versions
-  yum:
-    list: kernel-headers
-  register: yum_list
-
-- name: register installed kernel-headers version
-  debug:
-    msg: "{{ yum_list.results | selectattr('yumstate', 'equalto', 'installed') | list }}"
-  register: kernel_headers_version
-
-- name: update kernel if headers don't match
-  yum:
-    name:
-      - kernel
-      - kernel-tools
-      - kernel-tools-libs
-      - kernel-devel
-      - kernel-debug-devel
-      - kernel-headers
-    state: latest
-  register: kernel_update
-  when: kernel_version.msg[0].release != kernel_headers_version.msg[0].release
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  changed_when: install_driver_rhel7.changed or install_driver_rhel8.changed
