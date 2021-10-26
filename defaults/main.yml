@@ -4,6 +4,7 @@ nvidia_driver_persistence_mode_on: yes
 nvidia_driver_skip_reboot: no
 nvidia_driver_module_file: /etc/modprobe.d/nvidia.conf
 nvidia_driver_module_params: ''
+nvidia_driver_add_repos: yes
 
 
 ##############################################################################
