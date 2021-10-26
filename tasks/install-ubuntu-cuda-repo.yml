@@ -11,12 +11,14 @@
     owner: "root"
     group: "root"
     mode: "0644"
+  when: nvidia_driver_add_repos | bool
 
 - name: add key
   apt_key:
     url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
     id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
 
 
 - name: add repo
@@ -24,6 +26,7 @@
     repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
     update_cache: yes
   environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
 
 - name: install driver packages
   apt:
