@@ -44,7 +44,14 @@
   when: nvidia_driver_add_repos | bool
 
 - name: install dependencies
-  yum: name=dkms
+  yum:
+    name: dkms
+    state: present
+
+- name: blacklist nouveau
+  kernel_blacklist:
+    name: nouveau
+    state: present
 
 - name: add repo
   yum_repository:
