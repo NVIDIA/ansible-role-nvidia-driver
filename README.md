@@ -74,3 +74,5 @@ Currently, this role supports the following Linux distributions:
 * Ubuntu 20.04 LTS
 * CentOS 7
 * Red Hat Enterprise Linux 7
+* CentOS 8
+* Red Hat Enterprise Linux 8
