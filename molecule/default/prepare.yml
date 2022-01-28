@@ -1,0 +1,10 @@
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+
+  - name: update apt cache and install gpg-agent
+    apt:
+      update_cache: yes
+      name: gpg-agent
+      state: present

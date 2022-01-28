@@ -1,0 +1,81 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+
+  - name: ubuntu-1804-canonical
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - canonical_repo
+    - ubuntu
+
+  - name: ubuntu-1804-cuda
+    image: geerlingguy/docker-ubuntu1804-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - cuda_repo
+    - ubuntu
+
+  - name: ubuntu-2004-canonical
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - canonical_repo
+    - ubuntu
+
+  - name: ubuntu-2004-cuda
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - cuda_repo
+    - ubuntu
+
+  - name: centos-7
+    image: geerlingguy/docker-centos7-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+
+  - name: centos-8
+    image: geerlingguy/docker-centos8-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+
+provisioner:
+  name: ansible
+  ansible_args:
+  - -vv
+  inventory:
+    group_vars:
+      all:
+        nvidia_driver_skip_reboot: true
+      canonical_repo:
+        nvidia_driver_ubuntu_install_from_cuda_repo: false
+      cuda_repo:
+        nvidia_driver_ubuntu_install_from_cuda_repo: true
+verifier:
+  name: ansible
