@@ -1,4 +1,5 @@
 galaxy_info:
+  namespace: nvidia
   role_name: nvidia_driver
   author: Luke Yeager
   company: NVIDIA
