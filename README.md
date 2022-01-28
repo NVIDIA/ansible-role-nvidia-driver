@@ -31,6 +31,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 | `nvidia_driver_skip_reboot` | `no` | Whether to skip rebooting the node during the install |
 | `nvidia_driver_module_file` | `"/etc/modprobe.d/nvidia.conf"` | Filename to use for NVIDIA driver parameters |
 | `nvidia_driver_module_params` | `""` | Parameters to pass to the NVIDIA driver |
+| `nvidia_driver_branch` | `"470"` | Default driver branch to install |
 
 ### Red Hat specific variables
 
@@ -50,8 +51,6 @@ By default, the Canonical repositories will be used, and the driver installed wi
 | Variable | Default value | Description |
 | -------- | ------------- | ----------- |
 | `nvidia_driver_ubuntu_install_from_cuda_repo` | `no` | Flag whether to use the CUDA repo |
-| `nvidia_driver_ubuntu_branch` | `450` | Driver branch to use for the install |
-| `nvidia_driver_ubuntu_packages` | `["nvidia-headless-450-server", "nvidia-headless-450-utils"]` | Package names to install from Canonical repo |
 | `nvidia_driver_ubuntu_cuda_repo_baseurl` | `"http://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_url` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"` | GPG key for the CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_gpgkey_id` | `"7fa2af80"` | GPG key ID for the CUDA repo |
