@@ -31,7 +31,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 | `nvidia_driver_skip_reboot` | `no` | Whether to skip rebooting the node during the install |
 | `nvidia_driver_module_file` | `"/etc/modprobe.d/nvidia.conf"` | Filename to use for NVIDIA driver parameters |
 | `nvidia_driver_module_params` | `""` | Parameters to pass to the NVIDIA driver |
-| `nvidia_driver_branch` | `"470"` | Default driver branch to install |
+| `nvidia_driver_branch` | `"510"` | Default driver branch to install |
 
 ### Red Hat specific variables
 
