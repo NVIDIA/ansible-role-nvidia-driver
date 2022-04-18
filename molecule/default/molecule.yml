@@ -57,13 +57,13 @@ platforms:
     pre_build_image: true
     privileged: true
 
-  - name: centos-8
-    image: geerlingguy/docker-centos8-ansible
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    command: /sbin/init
-    pre_build_image: true
-    privileged: true
+#  - name: centos-8
+#    image: geerlingguy/docker-centos8-ansible
+#    volumes:
+#      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+#    command: /sbin/init
+#    pre_build_image: true
+#    privileged: true
 
 provisioner:
   name: ansible
