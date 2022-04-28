@@ -52,8 +52,6 @@ By default, the Canonical repositories will be used, and the driver installed wi
 | -------- | ------------- | ----------- |
 | `nvidia_driver_ubuntu_install_from_cuda_repo` | `no` | Flag whether to use the CUDA repo |
 | `nvidia_driver_ubuntu_cuda_repo_baseurl` | `"http://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo |
-| `nvidia_driver_ubuntu_cuda_repo_gpgkey_url` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}/7fa2af80.pub"` | GPG key for the CUDA repo |
-| `nvidia_driver_ubuntu_cuda_repo_gpgkey_id` | `"7fa2af80"` | GPG key ID for the CUDA repo |
 | `nvidia_driver_ubuntu_cuda_package` | `"cuda-drivers"` | Package name to install from CUDA repo |
 
 ## Example playbook

@@ -4,23 +4,26 @@
     repo: ppa:graphics-drivers/ppa
     state: absent
 
-- name: add pin file
-  copy:
-    src: "cuda-ubuntu.pin"
-    dest: "/etc/apt/preferences.d/cuda-repository-pin-600"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  when: nvidia_driver_add_repos | bool
-
-- name: add key
+- name: remove old signing key
   apt_key:
-    url: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_url }}"
-    id: "{{ nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+    id: "{{ old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id }}"
+    state: absent
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: nvidia_driver_add_repos | bool
 
-- name: esure kmod is installed
+- name: add CUDA keyring
+  apt:
+    deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
+    state: "present"
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
+
+- name: force an apt update
+  apt:
+    update_cache: true
+  changed_when: false
+
+- name: ensure kmod is installed
   apt:
     name: "kmod"
     state: "present"
@@ -29,13 +32,6 @@
   kernel_blacklist:
     name: nouveau
     state: present
-
-- name: add repo
-  apt_repository:
-    repo: "deb {{ nvidia_driver_ubuntu_cuda_repo_baseurl }} /"
-    update_cache: yes
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
-  when: nvidia_driver_add_repos | bool
 
 - name: install driver packages
   apt:
