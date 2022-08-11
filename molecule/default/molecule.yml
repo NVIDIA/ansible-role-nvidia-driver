@@ -49,6 +49,28 @@ platforms:
     - cuda_repo
     - ubuntu
 
+  - name: ubuntu-2204-canonical
+    image: geerlingguy/docker-ubuntu2204-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - canonical_repo
+    - ubuntu
+
+  - name: ubuntu-2204-cuda
+    image: geerlingguy/docker-ubuntu2204-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - cuda_repo
+    - ubuntu
+
   - name: centos-7
     image: geerlingguy/docker-centos7-ansible
     volumes:
