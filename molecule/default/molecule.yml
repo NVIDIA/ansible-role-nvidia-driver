@@ -27,7 +27,7 @@ platforms:
     - cuda_repo
     - ubuntu
 
-  - name: ubuntu-2004-canonical
+  - name: ubuntu-2004-canonical-server
     image: geerlingguy/docker-ubuntu2004-ansible
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -36,6 +36,18 @@ platforms:
     privileged: true
     groups:
     - canonical_repo
+    - ubuntu
+
+  - name: ubuntu-2004-canonical-noserver
+    image: geerlingguy/docker-ubuntu2004-ansible
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /sbin/init
+    pre_build_image: true
+    privileged: true
+    groups:
+    - canonical_repo
+    - canonical_repo_noserver
     - ubuntu
 
   - name: ubuntu-2004-cuda
@@ -97,6 +109,8 @@ provisioner:
         nvidia_driver_skip_reboot: true
       canonical_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: false
+      canonical_repo_noserver:
+        nvidia_driver_ubuntu_packages_suffix: ""
       cuda_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: true
 verifier:
