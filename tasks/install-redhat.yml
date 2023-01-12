@@ -65,7 +65,7 @@
 
 - name: install driver packages RHEL/CentOS 7 and older
   yum:
-    name: "{{ nvidia_driver_package_version | ternary('nvidia-driver-latest-dkms-'+nvidia_driver_package_version, 'nvidia-driver-branch-'+nvidia_driver_rhel_branch) }}"
+    name: "{{ (nvidia_driver_package_version | length == 0) | ternary('nvidia-driver-latest-dkms', 'nvidia-driver-branch-'+nvidia_driver_package_version) }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel7
@@ -74,7 +74,7 @@
 
 - name: install driver packages RHEL/CentOS 8 and newer
   dnf:
-    name: "{{ nvidia_driver_package_version | ternary('@nvidia-driver:'+nvidia_driver_package_version, '@nvidia-driver:'+nvidia_driver_rhel_branch+'-dkms') }}"
+    name: "{{ (nvidia_driver_package_version | length == 0) | ternary('@nvidia-driver', '@nvidia-driver:'+nvidia_driver_package_version) }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel8
