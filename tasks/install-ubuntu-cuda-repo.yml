@@ -15,6 +15,7 @@
   apt:
     deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
     state: "present"
+    force: true
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: nvidia_driver_add_repos | bool
 
