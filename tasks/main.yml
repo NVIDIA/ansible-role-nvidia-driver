@@ -1,52 +1,61 @@
 ---
-- name: unload nouveau
-  modprobe:
+- name: Unload nouveau
+  community.general.modprobe:
     name: nouveau
     state: absent
   ignore_errors: true
+  become: true
 
-- name: ubuntu install tasks (canonical repos)
-  include_tasks: install-ubuntu.yml
+- name: Blacklist the nouveau driver module
+  community.general.kernel_blacklist:
+    name: nouveau
+    state: present
+  become: true
+
+- name: Ubuntu install tasks (canonical repos)
+  ansible.builtin.include_tasks: install-ubuntu.yml
   when: ansible_distribution == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo)
 
-- name: ubuntu install tasks (CUDA repo)
-  include_tasks: install-ubuntu-cuda-repo.yml
+- name: Ubuntu install tasks (CUDA repo)
+  ansible.builtin.include_tasks: install-ubuntu-cuda-repo.yml
   when: ansible_distribution == 'Ubuntu' and nvidia_driver_ubuntu_install_from_cuda_repo
 
-- name: redhat family install tasks
-  include_tasks: install-redhat.yml
+- name: RedHat family install tasks
+  ansible.builtin.include_tasks: install-redhat.yml
   when: ansible_os_family == 'RedHat'
 
-- name: create persistenced override dir
-  file:
+- name: Create persistenced override dir
+  ansible.builtin.file:
     path: /etc/systemd/system/nvidia-persistenced.service.d/
     state: directory
-    recurse: yes
+    recurse: true
 
-- name: configure persistenced service to turn on persistence mode
-  copy:
+- name: Configure persistenced service to turn on persistence mode
+  ansible.builtin.copy:
     src: nvidia-persistenced-override.conf
     dest: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
+    mode: "0644"
   when: nvidia_driver_persistence_mode_on
 
-- name: remove persistenced service override
-  file:
+- name: Remove persistenced service override
+  ansible.builtin.file:
     path: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
     state: absent
   when: not nvidia_driver_persistence_mode_on
 
-- name: enable persistenced
-  systemd:
+- name: Enable persistenced
+  ansible.builtin.systemd:
     name: nvidia-persistenced
-    enabled: yes
+    enabled: true
   when: nvidia_driver_package_state != 'absent'
 
-- name: set module parameters
-  template:
+- name: Set module parameters
+  ansible.builtin.template:
     src: nvidia.conf.j2
     dest: "{{ nvidia_driver_module_file }}"
     mode: '0644'
 
-- name: reboot after driver install
-  reboot:
+- name: Reboot after driver install
+  ansible.builtin.reboot:
+  become: true
   when: install_driver.changed and not nvidia_driver_skip_reboot
