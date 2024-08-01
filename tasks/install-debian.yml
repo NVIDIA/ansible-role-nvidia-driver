@@ -1,0 +1,35 @@
+---
+- name: add contrib & non-free repository
+  replace:
+    dest: /etc/apt/sources.list
+    regexp: '^(deb(?!.* contrib).*)'
+    replace: '\1 contrib non-free'
+
+- name: update apt
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: install Linux headers and non-free firmware
+  apt:
+    name: 
+      - linux-headers-{{ ansible_kernel }}
+      - firmware-misc-nonfree
+    state: present
+
+- name: install driver packages
+  apt:
+    name: "{{ nvidia_driver_package_version | ternary(item+'='+nvidia_driver_package_version, item) }}"
+    state: "{{ nvidia_driver_package_state }}"
+    autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
+    purge: "{{ nvidia_driver_package_state == 'absent' }}"
+  loop: "{{ nvidia_driver_debian_packages }}"
+  register: install_driver
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+
+- name: install tesla drivers
+  apt:
+    state: present
+    name: "{{ nvidia_driver_debian_tesla_package }}"
+  register: install_driver
+  when: nvidia_driver_debian_install_tesla_driver == true

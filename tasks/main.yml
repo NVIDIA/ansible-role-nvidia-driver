@@ -5,6 +5,14 @@
     state: absent
   ignore_errors: true
 
+- name: debian install tasks (debian repos)
+  include_tasks: install-debian.yml
+  when: ansible_distribution == "Debian" and (not nvidia_driver_debian_install_from_cuda_repo)
+
+- name: debian install tasks (CUDA repos)
+  include_tasks: install-debian.yml
+  when: ansible_distribution == "Debian" and nvidia_driver_debian_install_from_cuda_repo
+
 - name: ubuntu install tasks (canonical repos)
   include_tasks: install-ubuntu.yml
   when: ansible_distribution == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo)
