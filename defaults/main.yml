@@ -20,6 +20,33 @@ nvidia_driver_rhel_branch: "{{ nvidia_driver_branch }}"
 
 
 ##############################################################################
+# Debian
+##############################################################################
+
+# Driver branch to install with Debian
+nvidia_driver_debian_branch: "{{ nvidia_driver_branch }}"
+
+# Determine if we should install from CUDA repo instead of Canonical repos
+nvidia_driver_debian_install_from_cuda_repo: no
+
+# Installing with Debian repositories
+nvidia_driver_debian_packages:
+- "nvidia-driver"
+- "nvidia-cuda-dev"
+- "nvidia-cudaaaa-toolkit"
+
+nvidia_driver_debian_install_tesla_driver: no
+nvidia_driver_debian_tesla_package: "nvidia-tesla-470-driver"
+
+# Installing with CUDA repositories
+old_nvidia_driver_debian_cuda_repo_gpgkey_id: "7fa2af80"
+nvidia_driver_debian_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _debian_repo_dir }}"
+nvidia_driver_debian_cuda_keyring_package: "cuda-keyring_1.1-1_all.deb"
+nvidia_driver_debian_cuda_keyring_url: "{{ nvidia_driver_debian_cuda_repo_baseurl }}/{{ nvidia_driver_debian_cuda_keyring_package }}"
+nvidia_driver_debian_cuda_package: "cuda-drivers-{{ nvidia_driver_debian_branch }}"
+
+
+##############################################################################
 # Ubuntu                                                                     #
 ##############################################################################
 
