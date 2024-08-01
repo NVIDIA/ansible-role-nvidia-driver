@@ -33,7 +33,7 @@ nvidia_driver_debian_install_from_cuda_repo: no
 nvidia_driver_debian_packages:
 - "nvidia-driver"
 - "nvidia-cuda-dev"
-- "nvidia-cudaaaa-toolkit"
+- "nvidia-cuda-toolkit"
 
 nvidia_driver_debian_install_tesla_driver: no
 nvidia_driver_debian_tesla_package: "nvidia-tesla-470-driver"
