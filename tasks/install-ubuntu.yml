@@ -1,15 +1,16 @@
 ---
-- name: remove ppa
-  apt_repository:
+- name: Remove ppa
+  ansible.builtin.apt_repository:
     repo: ppa:graphics-drivers/ppa
     state: absent
 
-- name: install driver packages
-  apt:
-    name: "{{ nvidia_driver_package_version | ternary(item+'='+nvidia_driver_package_version, item) }}"
+- name: Install driver packages
+  ansible.builtin.apt:
+    name: "{{ nvidia_driver_package_version | ternary(item + '=' + nvidia_driver_package_version, item) }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
     purge: "{{ nvidia_driver_package_state == 'absent' }}"
   loop: "{{ nvidia_driver_ubuntu_packages }}"
   register: install_driver
-  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  environment: "{{ proxy_env if proxy_env is defined else {} }}"
+  become: true
