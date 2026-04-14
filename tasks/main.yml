@@ -7,15 +7,15 @@
 
 - name: ubuntu install tasks (canonical repos)
   include_tasks: install-ubuntu.yml
-  when: ansible_distribution == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo)
+  when: ansible_facts['distribution'] == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo)
 
 - name: ubuntu install tasks (CUDA repo)
   include_tasks: install-ubuntu-cuda-repo.yml
-  when: ansible_distribution == 'Ubuntu' and nvidia_driver_ubuntu_install_from_cuda_repo
+  when: ansible_facts['distribution'] == 'Ubuntu' and nvidia_driver_ubuntu_install_from_cuda_repo
 
 - name: redhat family install tasks
   include_tasks: install-redhat.yml
-  when: ansible_os_family == 'RedHat'
+  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: create persistenced override dir
   file:

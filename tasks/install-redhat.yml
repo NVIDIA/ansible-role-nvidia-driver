@@ -6,11 +6,11 @@
   - name: attempt to install kernel support packages for current version
     yum:
       name:
-        - "kernel-headers-{{ ansible_kernel }}"
-        - "kernel-tools-{{ ansible_kernel }}"
-        - "kernel-tools-libs-{{ ansible_kernel }}"
-        - "kernel-devel-{{ ansible_kernel }}"
-        - "kernel-debug-devel-{{ ansible_kernel }}"
+        - "kernel-headers-{{ ansible_facts['kernel'] }}"
+        - "kernel-tools-{{ ansible_facts['kernel'] }}"
+        - "kernel-tools-libs-{{ ansible_facts['kernel'] }}"
+        - "kernel-devel-{{ ansible_facts['kernel'] }}"
+        - "kernel-debug-devel-{{ ansible_facts['kernel'] }}"
       state: present
     environment: "{{proxy_env if proxy_env is defined else {}}}"
   rescue:
@@ -70,7 +70,7 @@
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel7
   environment: "{{proxy_env if proxy_env is defined else {}}}"
-  when: ansible_distribution_major_version < '8'
+  when: ansible_facts['distribution_major_version'] < '8'
 
 - name: install driver packages RHEL/CentOS 8 and newer
   dnf:
@@ -79,7 +79,7 @@
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel8
   environment: "{{proxy_env if proxy_env is defined else {}}}"
-  when: ansible_distribution_major_version > '7'
+  when: ansible_facts['distribution_major_version'] > '7'
 
 - name: Set install_driver.changed var for RHEL 7/8
   debug:
