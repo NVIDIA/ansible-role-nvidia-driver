@@ -65,13 +65,26 @@ By default, the Canonical repositories will be used, and the driver installed wi
 
 ## Supported distributions
 
-Currently, this role supports the following Linux distributions:
+Currently exercised by Molecule's container CI:
 
-* NVIDIA DGX OS 4
-* NVIDIA DGX OS 5
-* Ubuntu 18.04 LTS
-* Ubuntu 20.04 LTS
-* CentOS 7
-* Red Hat Enterprise Linux 7
+* Ubuntu 22.04 LTS
+* Ubuntu 24.04 LTS
+* Rocky Linux 8
+* Rocky Linux 9
+
+Red Hat Enterprise Linux 8 and 9 use the same Red Hat-family role path and
+NVIDIA repositories as the Rocky Linux scenarios, but RHEL itself is not
+directly exercised in CI.
+
+NVIDIA DGX OS 6 and DGX OS 7 are based on Ubuntu 22.04 and Ubuntu 24.04
+respectively. They share the Ubuntu role paths, but DGX OS and physical DGX
+hardware are not directly exercised in CI.
+
+The role retains legacy code paths for the following. They are not exercised
+in CI and receive best-effort, community support; users should verify
+repository and driver availability for their target release.
+
+* NVIDIA DGX OS 4 / DGX OS 5
+* Ubuntu 18.04 LTS / Ubuntu 20.04 LTS
+* CentOS 7 / Red Hat Enterprise Linux 7
 * CentOS 8
-* Red Hat Enterprise Linux 8
