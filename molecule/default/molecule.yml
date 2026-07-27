@@ -74,6 +74,8 @@ platforms:
     command: /sbin/init
     pre_build_image: true
     privileged: true
+    groups:
+    - el8
 
   - name: rockylinux-9
     image: geerlingguy/docker-rockylinux9-ansible
@@ -104,5 +106,10 @@ provisioner:
         nvidia_driver_ubuntu_packages_suffix: ""
       cuda_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: true
+      el8:
+        # The EL8 image ships only Python 3.6 as /usr/bin/python3, which is
+        # too old for current ansible-core modules. prepare.yml installs
+        # Python 3.9 and this points the interpreter at it.
+        ansible_python_interpreter: /usr/bin/python3.9
 verifier:
   name: ansible

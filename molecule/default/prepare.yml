@@ -8,3 +8,14 @@
       update_cache: yes
       name: gpg-agent
       state: present
+
+- hosts: el8
+  # Facts cannot be gathered until a supported Python is present, and raw
+  # needs no Python at all.
+  gather_facts: false
+  become: true
+  tasks:
+
+  - name: install a Python supported by current ansible-core
+    raw: dnf install -y python39
+    changed_when: false

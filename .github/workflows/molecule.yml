@@ -29,5 +29,8 @@ jobs:
         run: molecule test
         working-directory: ansible-role-nvidia-driver
         env:
+          # converge.yml includes the role by name, so the directory holding
+          # the checkout must be on the roles path.
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
