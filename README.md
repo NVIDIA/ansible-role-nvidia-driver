@@ -63,6 +63,19 @@ By default, the Canonical repositories will be used, and the driver installed wi
   - nvidia.nvidia_driver
 ```
 
+## Requirements
+
+This role uses modules from the `community.general` collection, which is not
+part of `ansible-core`. When installing the role from Galaxy, install the
+collection explicitly:
+
+```
+ansible-galaxy collection install community.general
+```
+
+For a source checkout, `ansible-galaxy collection install -r requirements.yml`
+installs the declared collection dependencies.
+
 ## Supported distributions
 
 Currently exercised by Molecule's container CI:

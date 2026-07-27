@@ -25,6 +25,9 @@ jobs:
       - name: Install Molecule
         run: pip install --upgrade ansible-core molecule 'molecule-plugins[docker]' docker
 
+      - name: Install collection dependencies
+        run: ansible-galaxy collection install -r ansible-role-nvidia-driver/requirements.yml
+
       - name: Run Molecule
         run: molecule test
         working-directory: ansible-role-nvidia-driver
