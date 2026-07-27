@@ -11,9 +11,10 @@
 
 - hosts: el8
   # Facts cannot be gathered until a supported Python is present, and raw
-  # needs no Python at all.
+  # needs no Python at all. The container connection is already root, so
+  # become would invoke sudo needlessly — and the image has no usable sudo.
   gather_facts: false
-  become: true
+  become: false
   tasks:
 
   - name: install a Python supported by current ansible-core
