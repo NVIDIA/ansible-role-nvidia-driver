@@ -101,6 +101,12 @@ platforms:
 
 provisioner:
   name: ansible
+  config_options:
+    defaults:
+      # The container images do not provide a writable home for the
+      # connecting user, so Ansible cannot create its default remote
+      # temporary directory under ~/.ansible/tmp.
+      remote_tmp: /tmp/.ansible/tmp
   ansible_args:
   - -vv
   inventory:
