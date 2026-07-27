@@ -1,15 +1,33 @@
 ---
+name: molecule
+
 on:
   - push
   - pull_request
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  molecule:
+    runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
+      - name: Check out the role
+        uses: actions/checkout@v4
         with:
-          path: "${{ github.repository }}"
-      - name: molecule
-        uses: robertdebock/molecule-action@2.7.2
+          # Molecule resolves the role through the parent of the project
+          # directory, so the checkout directory must match the role name
+          # used by molecule/default/converge.yml.
+          path: ansible-role-nvidia-driver
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Molecule
+        run: pip install --upgrade ansible-core molecule 'molecule-plugins[docker]' docker
+
+      - name: Run Molecule
+        run: molecule test
+        working-directory: ansible-role-nvidia-driver
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
