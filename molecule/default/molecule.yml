@@ -103,12 +103,16 @@ provisioner:
     group_vars:
       all:
         nvidia_driver_skip_reboot: true
+        # Keep this CI-repair PR independently runnable while installable
+        # defaults are reviewed in the follow-up PRs.
+        nvidia_driver_branch: "580"
       canonical_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: false
       canonical_repo_noserver:
         nvidia_driver_ubuntu_packages_suffix: ""
       cuda_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: true
+        nvidia_driver_ubuntu_cuda_keyring_package: "cuda-keyring_1.1-1_all.deb"
       el:
         # The connection is already root and these images have no working
         # sudo ('PAM account management error'). Naming the user lets

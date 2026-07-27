@@ -2,15 +2,17 @@
 name: molecule
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   molecule:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the role
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Molecule resolves the role through the parent of the project
           # directory, so the checkout directory must match the role name
@@ -18,15 +20,24 @@ jobs:
           path: ansible-role-nvidia-driver
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
-      - name: Install Molecule
-        run: pip install --upgrade ansible-core molecule 'molecule-plugins[docker]' docker
+      - name: Install test tooling
+        run: pip install --upgrade ansible-core molecule 'molecule-plugins[docker]' docker pytest jinja2 pyyaml
 
       - name: Install collection dependencies
         run: ansible-galaxy collection install -r ansible-role-nvidia-driver/requirements.yml
+
+      - name: Run Python tests
+        working-directory: ansible-role-nvidia-driver
+        run: |
+          if find tests -type f -name 'test_*.py' -print -quit | grep -q .; then
+            python -m pytest tests
+          else
+            echo "No Python unit tests found."
+          fi
 
       - name: Run Molecule
         run: molecule test

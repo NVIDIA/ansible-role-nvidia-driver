@@ -63,7 +63,7 @@ By default, the Canonical repositories will be used, and the driver installed wi
   - nvidia.nvidia_driver
 ```
 
-## Requirements
+## Ansible collection dependency
 
 This role uses modules from the `community.general` collection, which is not
 part of `ansible-core`. When installing the role from Galaxy, install the
