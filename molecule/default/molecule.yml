@@ -75,6 +75,7 @@ platforms:
     pre_build_image: true
     privileged: true
     groups:
+    - el
     - el8
 
   - name: rockylinux-9
@@ -85,6 +86,8 @@ platforms:
     command: /sbin/init
     pre_build_image: true
     privileged: true
+    groups:
+    - el
 
 provisioner:
   name: ansible
@@ -106,6 +109,11 @@ provisioner:
         nvidia_driver_ubuntu_packages_suffix: ""
       cuda_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: true
+      el:
+        # The connection is already root and these images have no working
+        # sudo ('PAM account management error'). Naming the user lets
+        # Ansible skip escalation instead of shelling out to sudo.
+        ansible_user: root
       el8:
         # The EL8 image ships only Python 3.6 as /usr/bin/python3, which is
         # too old for current ansible-core modules. prepare.yml installs
