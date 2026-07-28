@@ -103,9 +103,6 @@ provisioner:
     group_vars:
       all:
         nvidia_driver_skip_reboot: true
-        # Keep this CI-repair PR independently runnable while installable
-        # defaults are reviewed in the follow-up PRs.
-        nvidia_driver_branch: "580"
       canonical_repo:
         nvidia_driver_ubuntu_install_from_cuda_repo: false
       canonical_repo_noserver:
