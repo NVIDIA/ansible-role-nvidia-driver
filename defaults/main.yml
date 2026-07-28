@@ -5,7 +5,7 @@ nvidia_driver_skip_reboot: no
 nvidia_driver_module_file: /etc/modprobe.d/nvidia.conf
 nvidia_driver_module_params: ''
 nvidia_driver_add_repos: yes
-nvidia_driver_branch: "515"
+nvidia_driver_branch: "580"
 
 
 ##############################################################################
@@ -41,6 +41,6 @@ nvidia_driver_ubuntu_packages:
 # Installing with CUDA repositories
 old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id: "7fa2af80"
 nvidia_driver_ubuntu_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"
-nvidia_driver_ubuntu_cuda_keyring_package: "cuda-keyring_1.0-1_all.deb"
+nvidia_driver_ubuntu_cuda_keyring_package: "cuda-keyring_1.1-1_all.deb"
 nvidia_driver_ubuntu_cuda_keyring_url: "{{ nvidia_driver_ubuntu_cuda_repo_baseurl }}/{{ nvidia_driver_ubuntu_cuda_keyring_package }}"
 nvidia_driver_ubuntu_cuda_package: "cuda-drivers-{{ nvidia_driver_ubuntu_branch }}"

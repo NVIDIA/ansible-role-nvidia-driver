@@ -8,3 +8,15 @@
       update_cache: yes
       name: gpg-agent
       state: present
+
+- name: Prepare EL8 hosts
+  hosts: el8
+  # Facts cannot be gathered until a supported Python is present, and raw
+  # needs no Python at all. The container connection is already root, so
+  # become would invoke sudo needlessly — and the image has no usable sudo.
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install a Python supported by current ansible-core
+      ansible.builtin.raw: dnf install -y python39
+      changed_when: false

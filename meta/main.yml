@@ -10,13 +10,12 @@ galaxy_info:
   platforms:
     - name: Ubuntu
       versions:
-        - 'xenial'
-        - 'bionic'
-        - 'focal'
+        - 'jammy'
+        - 'noble'
     - name: EL
       versions:
-        - '7'
         - '8'
+        - '9'
 
   galaxy_tags:
     - 'nvidia'

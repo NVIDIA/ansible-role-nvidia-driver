@@ -1,0 +1,8 @@
+---
+# The role uses modules from community.general (modprobe,
+# kernel_blacklist). ansible-core does not ship them, so install this
+# before running the role:
+#
+#   ansible-galaxy collection install -r requirements.yml
+collections:
+  - name: community.general
