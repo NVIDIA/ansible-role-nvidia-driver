@@ -31,7 +31,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 | `nvidia_driver_skip_reboot`         | `no`                            | Whether to skip rebooting the node during the install                                                                 |
 | `nvidia_driver_module_file`         | `"/etc/modprobe.d/nvidia.conf"` | Filename to use for NVIDIA driver parameters                                                                          |
 | `nvidia_driver_module_params`       | `""`                            | Parameters to pass to the NVIDIA driver                                                                               |
-| `nvidia_driver_branch`              | `"515"`                         | Default driver branch to install                                                                                      |
+| `nvidia_driver_branch`              | `"580"`                         | Default driver branch to install                                                                                      |
 
 ### Red Hat specific variables
 
@@ -40,7 +40,8 @@ $ ansible-galaxy install nvidia.nvidia_driver
 |----------------------------------------|-------------------------------------------------------------------------------------------------------------------|-----------------------------------|
 | `epel_package`                         | `"https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"` | Package to install to enable EPEL |
 | `nvidia_driver_rhel_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"`                                | Base URL to use for CUDA repo     |
-| `nvidia_driver_rhel_cuda_repo_gpgkey`  | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/7fa2af80.pub"`                    | GPG key for the CUDA repo         |
+| `nvidia_driver_rhel_cuda_repo_gpgkey`  | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/D42D0685.pub"`                    | GPG key for the CUDA repo         |
+| `nvidia_driver_rhel_branch`            | `"{{ nvidia_driver_branch }}"`                                                                                    | Driver branch on Red Hat family hosts |
 
 ### Ubuntu specific variables
 
@@ -50,10 +51,17 @@ By default, the Canonical repositories will be used, and the driver installed wi
 
 | Variable                                      | Default value                                                                      | Description                                          |
 |-----------------------------------------------|------------------------------------------------------------------------------------|------------------------------------------------------|
+| `nvidia_driver_ubuntu_branch`                 | `"{{ nvidia_driver_branch }}"`                                                     | Driver branch on Ubuntu hosts                        |
 | `nvidia_driver_ubuntu_install_from_cuda_repo` | `no`                                                                               | Flag whether to use the CUDA repo                    |
-| `nvidia_driver_ubuntu_cuda_repo_baseurl`      | `"http://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo                        |
-| `nvidia_driver_ubuntu_cuda_package`           | `"cuda-drivers"`                                                                   | Package name to install from CUDA repo               |
+| `nvidia_driver_ubuntu_cuda_repo_baseurl`      | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _ubuntu_repo_dir }}"` | Base URL to use for CUDA repo                       |
+| `nvidia_driver_ubuntu_cuda_package`           | `"cuda-drivers-{{ nvidia_driver_ubuntu_branch }}"`                                  | Package name to install from CUDA repo              |
 | `nvidia_driver_ubuntu_packages_suffix`        | `"-server"`                                                                        | The suffix added to the apt packages when installing |
+
+On Ubuntu, the driver branch is part of the package name. If
+`nvidia_driver_package_version` pins a version from an older branch, also set
+`nvidia_driver_ubuntu_branch` (or `nvidia_driver_branch`) to that matching
+branch. A version-only pin otherwise combines the new default package name with
+an incompatible older version.
 
 ## Example playbook
 
