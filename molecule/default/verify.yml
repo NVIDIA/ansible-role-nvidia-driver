@@ -1,10 +1,63 @@
 ---
-# This is an example playbook to execute Ansible tests.
+# Molecule verification playbook for the NVIDIA driver role.
 
 - name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: true
   tasks:
-  - name: Example assertion
-    assert:
-      that: true
+    - name: Load role defaults if available
+      ansible.builtin.include_vars:
+        file: ../../defaults/main.yml
+        name: role_defaults
+      ignore_errors: true
+
+    - name: Check NVIDIA CUDA YUM repo is configured on EL
+      ansible.builtin.stat:
+        path: /etc/yum.repos.d/cuda.repo
+      register: cuda_repo
+      when: ansible_os_family == "RedHat"
+
+    - name: Assert NVIDIA CUDA YUM repo exists on EL
+      ansible.builtin.assert:
+        that:
+          - cuda_repo.stat.exists | bool
+      when:
+        - ansible_os_family == "RedHat"
+        - nvidia_driver_add_repos | default(role_defaults.nvidia_driver_add_repos | default(true)) | bool
+
+    - name: Verify nouveau is blacklisted where the role manages it
+      ansible.builtin.command:
+        cmd: grep -qxF "blacklist nouveau" /etc/modprobe.d/blacklist-ansible.conf
+      register: nouveau_blacklist
+      changed_when: false
+      failed_when: false
+      when:
+        - ansible_os_family == "RedHat" or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
+
+    - name: Assert nouveau is blacklisted where the role manages it
+      ansible.builtin.assert:
+        that:
+          - nouveau_blacklist.rc == 0
+      when:
+        - ansible_os_family == "RedHat" or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
+
+    - name: Check NVIDIA driver modprobe file
+      ansible.builtin.stat:
+        path: "{{ nvidia_driver_module_file | default(role_defaults.nvidia_driver_module_file | default('/etc/modprobe.d/nvidia.conf')) }}"
+      register: nvidia_module_file
+
+    - name: Assert NVIDIA driver modprobe file exists
+      ansible.builtin.assert:
+        that:
+          - nvidia_module_file.stat.exists | bool
+
+    - name: Check nvidia-persistenced override
+      ansible.builtin.stat:
+        path: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
+      register: persistenced_override
+
+    - name: Assert nvidia-persistenced override exists
+      ansible.builtin.assert:
+        that:
+          - persistenced_override.stat.exists | bool
+      when: nvidia_driver_persistence_mode_on | default(role_defaults.nvidia_driver_persistence_mode_on | default(true)) | bool
