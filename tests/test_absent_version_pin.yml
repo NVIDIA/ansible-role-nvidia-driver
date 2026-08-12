@@ -1,0 +1,22 @@
+---
+- name: Verify version pinning is omitted when package state is absent
+  hosts: localhost
+  gather_facts: false
+  vars:
+    nvidia_driver_ubuntu_packages:
+      - nvidia-driver-535
+      - nvidia-dkms-535
+    nvidia_driver_package_version: "535.104.05"
+    nvidia_driver_package_state: "absent"
+  tasks:
+    - name: compute rendered package names as the role would
+      ansible.builtin.set_fact:
+        rendered_names: "{{ rendered_names | default([]) + [item ~ suffix] }}"
+      vars:
+        suffix: "{{ ('=' + nvidia_driver_package_version) if (nvidia_driver_package_version | default('', true) and nvidia_driver_package_state != 'absent') else '' }}"
+      loop: "{{ nvidia_driver_ubuntu_packages }}"
+
+    - name: assert unversioned names are used for absent state
+      ansible.builtin.assert:
+        that:
+          - rendered_names == nvidia_driver_ubuntu_packages

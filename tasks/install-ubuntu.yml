@@ -6,7 +6,7 @@
 
 - name: install driver packages
   apt:
-    name: "{{ nvidia_driver_package_version | ternary(item+'='+nvidia_driver_package_version, item) }}"
+    name: "{{ item }}{{ ('=' + nvidia_driver_package_version) if (nvidia_driver_package_version | default('', true) and nvidia_driver_package_state != 'absent') else '' }}"
     state: "{{ nvidia_driver_package_state }}"
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
     purge: "{{ nvidia_driver_package_state == 'absent' }}"
