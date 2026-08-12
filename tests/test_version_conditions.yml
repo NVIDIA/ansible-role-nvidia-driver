@@ -1,0 +1,20 @@
+---
+- name: Verify RHEL/CentOS major version comparisons
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: set test versions
+      set_fact:
+        test_versions:
+          - { version: "7", rhel7: true, rhel8: false }
+          - { version: "8", rhel7: false, rhel8: true }
+          - { version: "9", rhel7: false, rhel8: true }
+          - { version: "10", rhel7: false, rhel8: true }
+
+    - name: assert version comparisons behave as expected
+      assert:
+        that:
+          - (item.version is version('8', '<')) == item.rhel7
+          - (item.version is version('7', '>')) == item.rhel8
+        fail_msg: "Version comparison failed for major version {{ item.version }}"
+      loop: "{{ test_versions }}"

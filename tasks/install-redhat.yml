@@ -70,7 +70,7 @@
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel7
   environment: "{{proxy_env if proxy_env is defined else {}}}"
-  when: ansible_distribution_major_version < '8'
+  when: ansible_distribution_major_version is version('8', '<')
 
 - name: install driver packages RHEL/CentOS 8 and newer
   dnf:
@@ -79,7 +79,7 @@
     autoremove: "{{ nvidia_driver_package_state == 'absent' }}"
   register: install_driver_rhel8
   environment: "{{proxy_env if proxy_env is defined else {}}}"
-  when: ansible_distribution_major_version > '7'
+  when: ansible_distribution_major_version is version('7', '>')
 
 - name: Set install_driver.changed var for RHEL 7/8
   debug:
