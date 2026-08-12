@@ -11,9 +11,17 @@
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: nvidia_driver_add_repos | bool
 
+- name: download CUDA keyring package
+  get_url:
+    url: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
+    dest: "/tmp/{{ nvidia_driver_ubuntu_cuda_keyring_url | basename }}"
+    mode: '0644'
+  environment: "{{proxy_env if proxy_env is defined else {}}}"
+  when: nvidia_driver_add_repos | bool
+
 - name: add CUDA keyring
   apt:
-    deb: "{{ nvidia_driver_ubuntu_cuda_keyring_url }}"
+    deb: "/tmp/{{ nvidia_driver_ubuntu_cuda_keyring_url | basename }}"
     state: "present"
   environment: "{{proxy_env if proxy_env is defined else {}}}"
   when: nvidia_driver_add_repos | bool
