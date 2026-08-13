@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the role
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           # Molecule resolves the role through the parent of the project
           # directory, so the checkout directory must match the role name
@@ -20,7 +20,7 @@ jobs:
           path: ansible-role-nvidia-driver
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
