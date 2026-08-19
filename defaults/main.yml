@@ -7,6 +7,9 @@ nvidia_driver_module_params: ''
 nvidia_driver_add_repos: yes
 nvidia_driver_branch: "580"
 
+# Reconcile kernel-modules with the newest kernel-core on EL9+ (see install-redhat.yml)
+nvidia_driver_ensure_kernel_modules: yes
+
 
 ##############################################################################
 # RedHat family                                                              #
