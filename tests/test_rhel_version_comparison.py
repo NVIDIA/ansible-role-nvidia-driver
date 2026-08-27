@@ -1,7 +1,7 @@
 """Regression test: RHEL major-version comparisons in tasks/install-redhat.yml.
 
 Bug: the version-gated `when` conditions compared the string fact
-`ansible_distribution_major_version` against string literals, so Jinja
+`ansible_facts['distribution_major_version']` against string literals, so Jinja
 performed a lexicographic comparison. For major version '10',
 `'10' < '8'` is True and `'10' > '7'` is False, which would run the
 legacy RHEL-7 yum task and skip the modern dnf task.
@@ -39,7 +39,7 @@ def _version_conditions():
     conditions = []
     for task in tasks:
         when = task.get("when")
-        if isinstance(when, str) and "ansible_distribution_major_version" in when:
+        if isinstance(when, str) and "ansible_facts['distribution_major_version']" in when:
             conditions.append(when)
     assert len(conditions) == 2, (
         f"expected 2 version-gated when conditions, found {conditions!r}"
@@ -52,10 +52,10 @@ def test_driver_install_task_selection(version, expect_el7, expect_el8):
     el7_when, el8_when = _version_conditions()
     env = jinja2.Environment()
     run_el7 = env.compile_expression(el7_when)(
-        ansible_distribution_major_version=version
+        ansible_facts={'distribution_major_version': version}
     )
     run_el8 = env.compile_expression(el8_when)(
-        ansible_distribution_major_version=version
+        ansible_facts={'distribution_major_version': version}
     )
     assert bool(run_el7) is expect_el7, (
         f"EL{version}: legacy yum task condition {el7_when!r} "
