@@ -49,6 +49,27 @@
     name: dkms
     state: present
 
+# EL9's dkms depends on kernel-devel-matched, which always tracks the newest
+# kernel-core rather than whatever kernel-devel we already staged above, so it
+# can pull in a newer kernel-core without kernel-modules to match.
+- name: ensure kernel-modules matches the newest kernel-core
+  block:
+  - name: find newest installed kernel-core version
+    shell:
+      cmd: set -o pipefail && rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1
+      executable: /bin/bash
+    register: nvidia_driver_newest_kernel_core
+    changed_when: false
+    failed_when: false
+
+  - name: install matching kernel-modules
+    package:
+      name: "kernel-modules-{{ nvidia_driver_newest_kernel_core.stdout }}"
+      state: present
+    environment: "{{proxy_env if proxy_env is defined else {}}}"
+    when: nvidia_driver_newest_kernel_core.rc == 0 and nvidia_driver_newest_kernel_core.stdout | length > 0
+  when: ansible_facts['distribution_major_version'] | int > 8 and nvidia_driver_ensure_kernel_modules | bool
+
 - name: blacklist nouveau
   kernel_blacklist:
     name: nouveau

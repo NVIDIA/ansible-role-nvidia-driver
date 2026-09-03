@@ -33,16 +33,19 @@ EXPECTED = [
 ]
 
 
+TASK_NAMES = (
+    "install driver packages RHEL/CentOS 7 and older",
+    "install driver packages RHEL/CentOS 8 and newer",
+)
+
+
 def _version_conditions():
     """Return (el7_when, el8_when) expressions from the tasks file."""
     tasks = yaml.safe_load(TASKS_FILE.read_text())
-    conditions = []
-    for task in tasks:
-        when = task.get("when")
-        if isinstance(when, str) and "ansible_facts['distribution_major_version']" in when:
-            conditions.append(when)
-    assert len(conditions) == 2, (
-        f"expected 2 version-gated when conditions, found {conditions!r}"
+    by_name = {task.get("name"): task.get("when") for task in tasks}
+    conditions = [by_name.get(name) for name in TASK_NAMES]
+    assert all(isinstance(c, str) for c in conditions), (
+        f"expected version-gated when conditions for {TASK_NAMES!r}, found {conditions!r}"
     )
     return conditions
 

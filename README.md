@@ -42,6 +42,7 @@ $ ansible-galaxy install nvidia.nvidia_driver
 | `nvidia_driver_rhel_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/"`                                | Base URL to use for CUDA repo     |
 | `nvidia_driver_rhel_cuda_repo_gpgkey`  | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _rhel_repo_dir }}/D42D0685.pub"`                    | GPG key for the CUDA repo         |
 | `nvidia_driver_rhel_branch`            | `"{{ nvidia_driver_branch }}"`                                                                                    | Driver branch on Red Hat family hosts |
+| `nvidia_driver_ensure_kernel_modules`  | `yes`                                                                                                              | Reconcile `kernel-modules` with the kernel-core dkms staged as newest (EL9+) |
 
 ### Ubuntu specific variables
 
