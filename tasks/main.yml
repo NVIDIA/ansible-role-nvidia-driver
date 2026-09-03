@@ -21,7 +21,7 @@
   file:
     path: /etc/systemd/system/nvidia-persistenced.service.d/
     state: directory
-    recurse: yes
+    recurse: true
 
 - name: configure persistenced service to turn on persistence mode
   copy:
@@ -38,7 +38,7 @@
 - name: enable persistenced
   systemd:
     name: nvidia-persistenced
-    enabled: yes
+    enabled: true
   when: nvidia_driver_package_state != 'absent'
 
 - name: set module parameters
