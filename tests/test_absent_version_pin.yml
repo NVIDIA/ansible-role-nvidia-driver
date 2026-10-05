@@ -1,22 +1,43 @@
 ---
-- name: Verify version pinning is omitted when package state is absent
+- name: Verify package version pinning in both Ubuntu install paths
   hosts: localhost
   gather_facts: false
   vars:
-    nvidia_driver_ubuntu_packages:
-      - nvidia-driver-535
-      - nvidia-dkms-535
-    nvidia_driver_package_version: "535.104.05"
-    nvidia_driver_package_state: "absent"
+    # Values needed only to render the task files; no tasks are executed.
+    old_nvidia_driver_ubuntu_cuda_repo_gpgkey_id: unused
+    nvidia_driver_ubuntu_cuda_keyring_url: unused
+    nvidia_driver_ubuntu_packages: []
+    install_paths:
+      - file: install-ubuntu.yml
+        package: nvidia-driver-535
+      - file: install-ubuntu.yml
+        package: nvidia-dkms-535
+      - file: install-ubuntu-cuda-repo.yml
+        package: cuda-drivers
+    version_cases:
+      - {state: absent, version: "535.104.05", suffix: ""}
+      - {state: present, version: "535.104.05", suffix: "=535.104.05"}
+      - {state: latest, version: "535.104.05", suffix: "=535.104.05"}
+      - {state: absent, version: "", suffix: ""}
+      - {state: present, version: "", suffix: ""}
+      - {state: absent, version: null, suffix: ""}
+      - {state: present, version: null, suffix: ""}
+      - {state: absent, suffix: ""}
+      - {state: present, suffix: ""}
   tasks:
-    - name: compute rendered package names as the role would
-      ansible.builtin.set_fact:
-        rendered_names: "{{ rendered_names | default([]) + [item ~ suffix] }}"
-      vars:
-        suffix: "{{ ('=' + nvidia_driver_package_version) if (nvidia_driver_package_version | default('', true) and nvidia_driver_package_state != 'absent') else '' }}"
-      loop: "{{ nvidia_driver_ubuntu_packages }}"
-
-    - name: assert unversioned names are used for absent state
+    # Read the real apt argument so a regression in either task is detected.
+    # Do not include the role: this test must not change host packages.
+    - name: Assert package names omit removal pins and retain installation pins
       ansible.builtin.assert:
         that:
-          - rendered_names == nvidia_driver_ubuntu_packages
+          - driver_task.apt.name == test_case.0.package ~ test_case.1.suffix
+      vars:
+        task_definitions: "{{ lookup('template', playbook_dir + '/../tasks/' + test_case.0.file) | from_yaml }}"
+        driver_task: "{{ task_definitions | selectattr('name', 'equalto', 'install driver packages') | first }}"
+        item: "{{ test_case.0.package }}"
+        nvidia_driver_ubuntu_cuda_package: "{{ test_case.0.package }}"
+        nvidia_driver_package_version: "{{ test_case.1.version }}"
+        nvidia_driver_package_state: "{{ test_case.1.state }}"
+      loop: "{{ install_paths | product(version_cases) | list }}"
+      loop_control:
+        loop_var: test_case
