@@ -25,6 +25,33 @@
         - ansible_os_family == "RedHat"
         - nvidia_driver_add_repos | default(role_defaults.nvidia_driver_add_repos | default(true)) | bool
 
+    - name: Check NVIDIA CUDA zypper repo is configured on SUSE
+      ansible.builtin.stat:
+        path: "/etc/zypp/repos.d/cuda-suse16-{{ ansible_architecture | replace('aarch64', 'sbsa') }}.repo"
+      register: cuda_zypper_repo
+      when: ansible_os_family == "Suse"
+
+    - name: Assert NVIDIA CUDA zypper repo exists on SUSE
+      ansible.builtin.assert:
+        that:
+          - cuda_zypper_repo.stat.exists | bool
+      when: ansible_os_family == "Suse"
+
+    - name: Read installed packages on SUSE
+      ansible.builtin.package_facts:
+        manager: rpm
+      when: ansible_os_family == "Suse"
+
+    - name: Assert the signed kernel module and user space share one version on SUSE
+      ansible.builtin.assert:
+        that:
+          - kmp in ansible_facts.packages
+          - ansible_facts.packages[kmp][0].version.split('_k')[0] == ansible_facts.packages['nvidia-compute-utils-G07'][0].version
+          - ansible_facts.packages['nvidia-persistenced'][0].version == ansible_facts.packages['nvidia-compute-utils-G07'][0].version
+      vars:
+        kmp: nvidia-open-driver-G07-signed-cuda-kmp-default
+      when: ansible_os_family == "Suse"
+
     - name: Verify nouveau is blacklisted where the role manages it
       ansible.builtin.command:
         cmd: grep -qxF "blacklist nouveau" /etc/modprobe.d/blacklist-ansible.conf
@@ -32,14 +59,14 @@
       changed_when: false
       failed_when: false
       when:
-        - ansible_os_family == "RedHat" or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
+        - ansible_os_family in ["RedHat", "Suse"] or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
 
     - name: Assert nouveau is blacklisted where the role manages it
       ansible.builtin.assert:
         that:
           - nouveau_blacklist.rc == 0
       when:
-        - ansible_os_family == "RedHat" or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
+        - ansible_os_family in ["RedHat", "Suse"] or (ansible_distribution == "Ubuntu" and nvidia_driver_ubuntu_install_from_cuda_repo | default(false) | bool)
 
     - name: Check NVIDIA driver modprobe file
       ansible.builtin.stat:

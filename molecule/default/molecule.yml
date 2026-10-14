@@ -89,6 +89,18 @@ platforms:
     groups:
     - el
 
+  - name: leap-16
+    image: localhost/molecule-leap-16
+    dockerfile: Dockerfile.leap16.j2
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    command: /sbin/init
+    pre_build_image: false
+    privileged: true
+    groups:
+    - suse
+
 provisioner:
   name: ansible
   config_options:
@@ -119,5 +131,8 @@ provisioner:
         # too old for current ansible-core modules. prepare.yml installs
         # Python 3.9 and this points the interpreter at it.
         ansible_python_interpreter: /usr/bin/python3.9
+      suse:
+        # Containers report the host's kernel, which is not a SUSE kernel flavour.
+        nvidia_driver_suse_kernel_flavor: default
 verifier:
   name: ansible

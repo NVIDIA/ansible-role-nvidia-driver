@@ -47,3 +47,20 @@ nvidia_driver_ubuntu_cuda_repo_baseurl: "https://developer.download.nvidia.com/c
 nvidia_driver_ubuntu_cuda_keyring_package: "cuda-keyring_1.1-1_all.deb"
 nvidia_driver_ubuntu_cuda_keyring_url: "{{ nvidia_driver_ubuntu_cuda_repo_baseurl }}/{{ nvidia_driver_ubuntu_cuda_keyring_package }}"
 nvidia_driver_ubuntu_cuda_package: "cuda-drivers-{{ nvidia_driver_ubuntu_branch }}"
+
+
+##############################################################################
+# SUSE                                                                       #
+##############################################################################
+
+# Driver branch on SLES 16 and openSUSE Leap 16
+nvidia_driver_suse_branch: "615"
+
+# Install SUSE's signed kernel module; false installs NVIDIA's DKMS package
+nvidia_driver_suse_signed_kmp: true
+
+# Kernel flavour the signed module is installed for
+nvidia_driver_suse_kernel_flavor: "{{ ansible_facts['kernel'].split('-') | last }}"
+
+nvidia_driver_suse_cuda_repo_baseurl: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/"
+nvidia_driver_suse_cuda_repo_gpgkey: "https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/3A8B5622.pub"

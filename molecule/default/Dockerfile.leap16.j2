@@ -1,0 +1,3 @@
+FROM registry.opensuse.org/opensuse/leap:16.0
+RUN zypper --non-interactive install --no-recommends python3 systemd kmod gpg2 \
+    && zypper clean --all

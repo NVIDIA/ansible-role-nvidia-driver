@@ -1,0 +1,108 @@
+---
+- name: check the SUSE platform is supported
+  assert:
+    that:
+      - ansible_facts['distribution'] in ['SLES', 'openSUSE Leap']
+      - ansible_facts['distribution_major_version'] == '16'
+      - nvidia_driver_suse_kernel_flavor in ['default', '64kb']
+    fail_msg: >-
+      SUSE support covers SLES 16 and openSUSE Leap 16 with the default or 64kb kernel.
+      Found {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }},
+      kernel flavour {{ nvidia_driver_suse_kernel_flavor }}.
+
+- name: check SLES is registered
+  stat:
+    path: /etc/zypp/credentials.d/SCCcredentials
+  register: _suse_scc_credentials
+  when: ansible_facts['distribution'] == 'SLES' and nvidia_driver_package_state != 'absent'
+
+# The kernel module and its build or kernel dependencies come from the SLES repositories.
+- name: fail unless SLES is registered
+  assert:
+    that: _suse_scc_credentials.stat.exists
+    fail_msg: Register the system with SUSEConnect before installing the NVIDIA driver.
+  when: ansible_facts['distribution'] == 'SLES' and nvidia_driver_package_state != 'absent'
+
+- name: add CUDA repo gpg key
+  rpm_key:
+    key: "{{ nvidia_driver_suse_cuda_repo_gpgkey }}"
+    fingerprint: "{{ _suse_cuda_repo_gpgkey_fingerprint }}"
+    state: present
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_add_repos | bool
+
+- name: add CUDA repo
+  zypper_repository:
+    name: "cuda-{{ _suse_repo_dir | replace('/', '-') }}"
+    description: NVIDIA CUDA zypper repo
+    repo: "{{ nvidia_driver_suse_cuda_repo_baseurl }}"
+    auto_import_keys: false
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_add_repos | bool
+
+- name: blacklist nouveau
+  kernel_blacklist:
+    name: nouveau
+    state: present
+
+- name: install kernel module package
+  zypper:
+    name: >-
+      {{ _suse_kernel_package }}{{ ('=' ~ nvidia_driver_package_version) if nvidia_driver_package_version | default('', true)
+      else ('<' ~ (nvidia_driver_suse_branch | int + 1)) }}
+    state: "{{ nvidia_driver_package_state }}"
+  register: _suse_install_kmp
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_package_state != 'absent'
+
+- name: read installed packages
+  package_facts:
+    manager: rpm
+  when: nvidia_driver_package_state != 'absent'
+
+# User space is pinned to the module's version so a newer CUDA repo release cannot pull in a different module.
+- name: set driver version from the kernel module package
+  set_fact:
+    _suse_driver_version: >-
+      {{ ansible_facts['packages'][_suse_kernel_package] | map(attribute='version')
+      | community.general.version_sort | last | regex_replace('_k.*$', '') }}
+  when: nvidia_driver_package_state != 'absent' and _suse_kernel_package in ansible_facts['packages']
+
+- name: check the kernel module matches the driver branch
+  assert:
+    that: _suse_driver_version.split('.')[0] == nvidia_driver_suse_branch | string
+    fail_msg: >-
+      {{ _suse_kernel_package }} {{ _suse_driver_version }} is not from branch {{ nvidia_driver_suse_branch }}.
+      Set nvidia_driver_suse_branch or nvidia_driver_package_version to a version available for this system.
+  when: _suse_driver_version is defined and not nvidia_driver_package_version | default('', true)
+
+- name: install driver user space packages
+  zypper:
+    name:
+      - "nvidia-compute-utils-G07={{ _suse_driver_version }}"
+      - "nvidia-persistenced={{ _suse_driver_version }}"
+    state: "{{ nvidia_driver_package_state }}"
+  register: _suse_install_userspace
+  environment: "{{ proxy_env | default({}) }}"
+  when: _suse_driver_version is defined
+
+- name: remove driver packages
+  zypper:
+    name:
+      - nvidia-open-driver-G07-signed-cuda-kmp-{{ nvidia_driver_suse_kernel_flavor }}
+      - nvidia-open-driver-G07
+      - nvidia-compute-utils-G07
+      - nvidia-compute-G07
+      - nvidia-common-G07
+      - nvidia-persistenced
+      - nvidia-modprobe
+    state: absent
+  register: _suse_remove
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_package_state == 'absent'
+
+- name: Set install_driver.changed var for SUSE
+  debug:
+    msg: Driver installed for SUSE
+  register: install_driver
+  changed_when: _suse_install_kmp is changed or _suse_install_userspace is changed or _suse_remove is changed
