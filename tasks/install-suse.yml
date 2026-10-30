@@ -61,9 +61,13 @@
     name: nouveau
     state: present
 
-- name: Read installed packages before install
-  ansible.builtin.package_facts:
-    manager: rpm
+- name: Read the installed kernel module version before install
+  ansible.builtin.command:
+    argv: [rpm, -q, --qf, "%{VERSION}\n", "{{ _suse_kernel_package }}"]
+  register: _suse_kmp_before
+  changed_when: false
+  failed_when: _suse_kmp_before.rc not in [0, 1]
+  check_mode: false
   when: nvidia_driver_package_state != 'absent'
 
 # zypper downgrades the module but not the user space it depends on.
@@ -71,8 +75,7 @@
   ansible.builtin.assert:
     that:
       - >-
-        ansible_facts['packages'][_suse_kernel_package]
-        | map(attribute='version') | map('regex_replace', '\..*$', '')
+        _suse_kmp_before.stdout_lines | map('regex_replace', '\..*$', '')
         | map('int') | max <= nvidia_driver_suse_branch | int
     fail_msg: >-
       Installed {{ _suse_kernel_package }} is newer than branch
@@ -82,7 +85,7 @@
   when:
     - nvidia_driver_package_state != 'absent'
     - not nvidia_driver_package_version | default('', true)
-    - _suse_kernel_package in ansible_facts['packages']
+    - _suse_kmp_before.rc == 0
 
 # DKMS builds against these; its dependency pulls the newest kernel's.
 - name: Install kernel headers for the running kernel
@@ -110,9 +113,13 @@
   environment: "{{ proxy_env | default({}) }}"
   when: nvidia_driver_package_state != 'absent'
 
-- name: Read installed packages
-  ansible.builtin.package_facts:
-    manager: rpm
+- name: Read the installed kernel module version
+  ansible.builtin.command:
+    argv: [rpm, -q, --qf, "%{VERSION}\n", "{{ _suse_kernel_package }}"]
+  register: _suse_kmp_installed
+  changed_when: false
+  failed_when: _suse_kmp_installed.rc not in [0, 1]
+  check_mode: false
   when: nvidia_driver_package_state != 'absent'
 
 # User space is pinned to the module's version so a newer CUDA repo release
@@ -120,12 +127,12 @@
 - name: Set driver version from the kernel module package
   ansible.builtin.set_fact:
     _suse_driver_version: >-
-      {{ ansible_facts['packages'][_suse_kernel_package]
-      | map(attribute='version') | community.general.version_sort | last
+      {{ _suse_kmp_installed.stdout_lines
+      | community.general.version_sort | last
       | regex_replace('_k.*$', '') }}
   when:
     - nvidia_driver_package_state != 'absent'
-    - _suse_kernel_package in ansible_facts['packages']
+    - _suse_kmp_installed.rc == 0
 
 - name: Check the kernel module matches the driver branch
   ansible.builtin.assert:

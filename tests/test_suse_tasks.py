@@ -10,6 +10,8 @@
   task changes anything.
 - On the DKMS path the running kernel's headers are installed before the
   module.
+- Installed versions are read with `rpm -q`, not `package_facts`, which
+  needs the rpm Python bindings on ansible-core before 2.21.
 - With the signed module enabled the kernel package is SUSE's
   `-signed-cuda-kmp-<flavour>`; the `-signed-kmp-<flavour>` name also
   matches SUSE's graphics module and would install the wrong driver.
@@ -63,8 +65,13 @@ def test_removal_covers_every_flavor():
 def test_downgrade_refused_before_module_changes():
     names = [t.get("name") for t in TASKS]
     check = names.index("Check the installed kernel module is not from a newer branch")
-    assert names.index("Read installed packages before install") < check
+    assert names.index("Read the installed kernel module version before install") < check
     assert check < names.index("Install kernel module package")
+
+
+def test_no_package_facts():
+    for task in TASKS:
+        assert "ansible.builtin.package_facts" not in task, task["name"]
 
 
 def test_dkms_headers_installed_before_module():
