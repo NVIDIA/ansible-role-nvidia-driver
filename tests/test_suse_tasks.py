@@ -8,6 +8,8 @@
   after the CUDA repo is added and before anything is installed.
 - A branch older than the installed module is refused before the module
   task changes anything.
+- Replacing an installed module pins `nvidia-common-G07` to the version
+  the availability check resolved, so the user space follows the module.
 - On the DKMS path the running kernel's headers are installed before the
   module.
 - Installed versions are read with `rpm -q`, not `package_facts`, which
@@ -67,6 +69,14 @@ def test_downgrade_refused_before_module_changes():
     check = names.index("Check the installed kernel module is not from a newer branch")
     assert names.index("Read the installed kernel module version before install") < check
     assert check < names.index("Install kernel module package")
+
+
+def test_module_change_pins_user_space():
+    names = [t.get("name") for t in TASKS]
+    check = TASKS[names.index("Check the kernel module package is available")]
+    install = TASKS[names.index("Install kernel module package")]
+    assert check["community.general.zypper"]["name"] == "{{ _suse_kernel_package_request }}"
+    assert "nvidia-common-G07=" in install["community.general.zypper"]["name"]
 
 
 def test_no_package_facts():

@@ -4,3 +4,7 @@ _suse_repo_dir: "suse{{ ansible_facts['distribution_major_version'] }}/{{ ansibl
 _suse_cuda_repo_gpgkey_fingerprint: "CF65941A859D4B4E6870F188736A284B3A8B5622"
 _suse_kernel_package: "{{ nvidia_driver_suse_signed_kmp | ternary('nvidia-open-driver-G07-signed-cuda-kmp-' ~ nvidia_driver_suse_kernel_flavor,
   'nvidia-open-driver-G07') }}"
+_suse_kernel_package_request: >-
+  {{ _suse_kernel_package }}{{ ('=' ~ nvidia_driver_package_version)
+  if nvidia_driver_package_version | default('', true)
+  else ('<' ~ (nvidia_driver_suse_branch | int + 1)) }}

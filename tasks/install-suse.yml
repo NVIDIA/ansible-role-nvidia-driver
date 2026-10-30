@@ -38,7 +38,7 @@
 # repositories: SCC, SUSE Multi-Linux Manager or a mirror.
 - name: Check the kernel module package is available
   community.general.zypper:
-    name: "{{ _suse_kernel_package }}"
+    name: "{{ _suse_kernel_package_request }}"
     state: present
   register: _suse_kmp_available
   check_mode: true
@@ -101,14 +101,20 @@
     - not nvidia_driver_suse_signed_kmp | bool
     - nvidia_driver_package_state != 'absent'
 
+# Without the pin, replacing an installed module lets zypper move its user
+# space to the newest CUDA repo release, whose kernel module requirement only
+# NVIDIA's DKMS package can meet.
 - name: Install kernel module package
   community.general.zypper:
     name: >-
-      {{ _suse_kernel_package }}{{
-      ('=' ~ nvidia_driver_package_version)
-      if nvidia_driver_package_version | default('', true)
-      else ('<' ~ (nvidia_driver_suse_branch | int + 1)) }}
+      {{ [_suse_kernel_package_request] + (['nvidia-common-G07=' ~ _target]
+      if _target and _suse_kmp_before.rc == 0 else []) }}
     state: "{{ nvidia_driver_package_state }}"
+  vars:
+    _target: >-
+      {{ _suse_kmp_available.stdout | default('')
+      | regex_findall('name="' ~ _suse_kernel_package ~ '" edition="([0-9.]+)')
+      | first | default('') }}
   register: _suse_install_kmp
   environment: "{{ proxy_env | default({}) }}"
   when: nvidia_driver_package_state != 'absent'
