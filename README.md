@@ -78,7 +78,7 @@ early if the kernel module package is not available.
 |----------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------|
 | `nvidia_driver_suse_branch`            | `"615"`                                                                               | Driver branch on SUSE hosts (does not follow `nvidia_driver_branch`) |
 | `nvidia_driver_suse_signed_kmp`        | `true`                                                                                | Install SUSE's signed kernel module; `false` installs NVIDIA's DKMS package |
-| `nvidia_driver_suse_kernel_flavor`     | `"{{ ansible_facts['kernel'].split('-') \| last }}"`                                  | Kernel flavour to install the driver for: `default`, `64kb`, or `nvidia` (SLES for NVIDIA, aarch64) |
+| `nvidia_driver_suse_kernel_flavor`     | `"{{ ansible_facts['kernel'].split('-') \| last }}"`                                  | Kernel flavour to install the driver for: `default` or `64kb` |
 | `nvidia_driver_suse_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/"`    | Base URL to use for CUDA repo                                     |
 | `nvidia_driver_suse_cuda_repo_gpgkey`  | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/3A8B5622.pub"` | GPG key for the CUDA repo                                |
 
@@ -127,9 +127,8 @@ Currently exercised by Molecule's container CI:
 * Rocky Linux 9
 * openSUSE Leap 16.0
 
-SLES 16.0 and 16.1 (x86_64 and aarch64, including SLES for NVIDIA) use the
-same SUSE role path and NVIDIA repository as Leap 16, but SLES itself is not
-directly exercised in CI.
+SLES 16.0 and 16.1 use the same SUSE role path and NVIDIA repository as the
+openSUSE Leap scenario, but SLES itself is not directly exercised in CI.
 
 Red Hat Enterprise Linux 8 and 9 use the same Red Hat-family role path and
 NVIDIA repositories as the Rocky Linux scenarios, but RHEL itself is not

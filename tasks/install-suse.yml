@@ -7,12 +7,9 @@
       - >-
         nvidia_driver_package_state == 'absent'
         or nvidia_driver_suse_kernel_flavor in ['default', '64kb']
-        or (nvidia_driver_suse_kernel_flavor == 'nvidia'
-        and ansible_facts['distribution'] == 'SLES'
-        and ansible_facts['architecture'] == 'aarch64')
     fail_msg: >-
       SUSE support covers SLES 16 and openSUSE Leap 16 with the default or
-      64kb kernel, and the nvidia kernel of SLES for NVIDIA on aarch64.
+      64kb kernel.
       Found {{ ansible_facts['distribution'] }}
       {{ ansible_facts['distribution_version'] }},
       kernel flavour {{ nvidia_driver_suse_kernel_flavor }}.
@@ -167,7 +164,6 @@
     name:
       - nvidia-open-driver-G07-signed-cuda-kmp-default
       - nvidia-open-driver-G07-signed-cuda-kmp-64kb
-      - nvidia-open-driver-G07-signed-cuda-kmp-nvidia
       - nvidia-open-driver-G07
       - nvidia-compute-utils-G07
       - nvidia-compute-G07

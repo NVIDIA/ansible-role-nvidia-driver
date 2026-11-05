@@ -60,7 +60,7 @@ def test_availability_checked_after_repo_before_install():
 def test_removal_covers_every_flavor():
     (remove,) = [t for t in TASKS if t.get("name") == "Remove driver packages"]
     names = remove["community.general.zypper"]["name"]
-    for flavor in ("default", "64kb", "nvidia"):
+    for flavor in ("default", "64kb"):
         assert f"nvidia-open-driver-G07-signed-cuda-kmp-{flavor}" in names
 
 
@@ -91,7 +91,7 @@ def test_dkms_headers_installed_before_module():
     assert "not nvidia_driver_suse_signed_kmp | bool" in TASKS[headers]["when"]
 
 
-@pytest.mark.parametrize("flavor", ["default", "64kb", "nvidia"])
+@pytest.mark.parametrize("flavor", ["default", "64kb"])
 @pytest.mark.parametrize("signed,expected", [
     (True, "nvidia-open-driver-G07-signed-cuda-kmp-{flavor}"),
     (False, "nvidia-open-driver-G07"),
