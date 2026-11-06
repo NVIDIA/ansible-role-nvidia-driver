@@ -72,7 +72,7 @@ the NVIDIA CUDA repository, at the same version as the module. The kernel
 module package, or with DKMS the kernel headers, come from the SLES
 repositories, so SLES must be registered with the SUSE Customer Center or get
 those repositories from SUSE Multi-Linux Manager or a mirror. The role fails
-early if the kernel module package is not available.
+early if the kernel module package for the requested branch is not available.
 
 | Variable                               | Default value                                                                         | Description                                                       |
 |----------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------|
@@ -86,8 +86,8 @@ On SUSE, `nvidia_driver_package_version` is the full version of the kernel
 module package, for the signed module including its `_k<kernel>` suffix; the
 user space is installed at the matching driver version.
 
-The role does not move an installed driver to an older branch. Remove it first
-with `nvidia_driver_package_state: absent`, then install the older branch.
+The role does not move an installed driver to an older version. Remove it first
+with `nvidia_driver_package_state: absent`, then install the older version.
 
 With `nvidia_driver_suse_signed_kmp: false` the role installs the kernel headers
 for the running kernel, so they must still be in the repositories; otherwise

@@ -53,6 +53,29 @@
       provides it. zypper: {{ _suse_kmp_available.msg | default('') }}
   when: nvidia_driver_package_state != 'absent'
 
+- name: Read the kernel module version zypper would install
+  ansible.builtin.set_fact:
+    _suse_kmp_candidate: >-
+      {{ _suse_kmp_available.stdout | default('')
+      | regex_findall('name="' ~ _suse_kernel_package ~ '" edition="([0-9.]+)')
+      | first | default('') }}
+  when: nvidia_driver_package_state != 'absent'
+
+# The request is "older than the next branch", which an older branch also meets.
+- name: Check the kernel module candidate is from the requested branch
+  ansible.builtin.assert:
+    that:
+      - _suse_kmp_candidate.split('.')[0] == nvidia_driver_suse_branch | string
+    fail_msg: >-
+      No branch {{ nvidia_driver_suse_branch }} build of
+      {{ _suse_kernel_package }} is available; zypper would install
+      {{ _suse_kmp_candidate }}. Set nvidia_driver_suse_branch or
+      nvidia_driver_package_version to a version available for this system.
+  when:
+    - nvidia_driver_package_state != 'absent'
+    - not nvidia_driver_package_version | default('', true)
+    - _suse_kmp_candidate | length > 0
+
 - name: Blacklist nouveau
   community.general.kernel_blacklist:
     name: nouveau
@@ -68,20 +91,28 @@
   when: nvidia_driver_package_state != 'absent'
 
 # zypper downgrades the module but not the user space it depends on.
-- name: Check the installed kernel module is not from a newer branch
+- name: Check the installed kernel module is not newer than the request
   ansible.builtin.assert:
     that:
       - >-
-        _suse_kmp_before.stdout_lines | map('regex_replace', '\..*$', '')
+        _pin | length == 0
+        or _suse_kmp_before.stdout_lines | map('regex_replace', '_k.*$', '')
+        | select('version', _pin, '>') | list | length == 0
+      - >-
+        _pin | length > 0
+        or _suse_kmp_before.stdout_lines | map('regex_replace', '\..*$', '')
         | map('int') | max <= nvidia_driver_suse_branch | int
     fail_msg: >-
-      Installed {{ _suse_kernel_package }} is newer than branch
-      {{ nvidia_driver_suse_branch }}. Remove it with
-      nvidia_driver_package_state absent, then install branch
-      {{ nvidia_driver_suse_branch }}.
+      Installed {{ _suse_kernel_package }} is newer than {{ _request }}.
+      Remove it with nvidia_driver_package_state absent, then install
+      {{ _request }}.
+  vars:
+    _pin: >-
+      {{ nvidia_driver_package_version | default('', true)
+      | regex_replace('_k.*$', '') }}
+    _request: "{{ _pin if _pin | length > 0 else 'branch ' ~ nvidia_driver_suse_branch }}"
   when:
     - nvidia_driver_package_state != 'absent'
-    - not nvidia_driver_package_version | default('', true)
     - _suse_kmp_before.rc == 0
 
 # DKMS builds against these; its dependency pulls the newest kernel's.
@@ -104,14 +135,9 @@
 - name: Install kernel module package
   community.general.zypper:
     name: >-
-      {{ [_suse_kernel_package_request] + (['nvidia-common-G07=' ~ _target]
-      if _target and _suse_kmp_before.rc == 0 else []) }}
+      {{ [_suse_kernel_package_request] + (['nvidia-common-G07=' ~ _suse_kmp_candidate]
+      if _suse_kmp_candidate and _suse_kmp_before.rc == 0 else []) }}
     state: "{{ nvidia_driver_package_state }}"
-  vars:
-    _target: >-
-      {{ _suse_kmp_available.stdout | default('')
-      | regex_findall('name="' ~ _suse_kernel_package ~ '" edition="([0-9.]+)')
-      | first | default('') }}
   register: _suse_install_kmp
   environment: "{{ proxy_env | default({}) }}"
   when: nvidia_driver_package_state != 'absent'
