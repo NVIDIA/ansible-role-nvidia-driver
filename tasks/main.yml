@@ -17,6 +17,10 @@
   include_tasks: install-redhat.yml
   when: ansible_facts['os_family'] == 'RedHat'
 
+- name: suse install tasks
+  include_tasks: install-suse.yml
+  when: ansible_facts['os_family'] == 'Suse'
+
 - name: create persistenced override dir
   file:
     path: /etc/systemd/system/nvidia-persistenced.service.d/

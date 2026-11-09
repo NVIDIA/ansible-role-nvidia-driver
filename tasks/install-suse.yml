@@ -1,0 +1,211 @@
+---
+- name: Check the SUSE platform is supported
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution'] in ['SLES', 'openSUSE Leap']
+      - ansible_facts['distribution_major_version'] == '16'
+      - >-
+        nvidia_driver_package_state == 'absent'
+        or nvidia_driver_suse_kernel_flavor in ['default', '64kb']
+    fail_msg: >-
+      SUSE support covers SLES 16 and openSUSE Leap 16 with the default or
+      64kb kernel.
+      Found {{ ansible_facts['distribution'] }}
+      {{ ansible_facts['distribution_version'] }},
+      kernel flavour {{ nvidia_driver_suse_kernel_flavor }}.
+
+- name: Add CUDA repo gpg key
+  ansible.builtin.rpm_key:
+    key: "{{ nvidia_driver_suse_cuda_repo_gpgkey }}"
+    fingerprint: "{{ _suse_cuda_repo_gpgkey_fingerprint }}"
+    state: present
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_add_repos | bool
+
+- name: Add CUDA repo
+  community.general.zypper_repository:
+    name: "cuda-{{ _suse_repo_dir | replace('/', '-') }}"
+    description: NVIDIA CUDA zypper repo
+    repo: "{{ nvidia_driver_suse_cuda_repo_baseurl }}"
+    auto_import_keys: false
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_add_repos | bool
+
+# The module and its kernel dependencies come from the distribution's
+# repositories: SCC, SUSE Multi-Linux Manager or a mirror.
+- name: Check the kernel module package is available
+  community.general.zypper:
+    name: "{{ _suse_kernel_package_request }}"
+    state: present
+  register: _suse_kmp_available
+  check_mode: true
+  changed_when: false
+  failed_when: false
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_package_state != 'absent'
+
+- name: Fail unless the kernel module package is available
+  ansible.builtin.assert:
+    that: _suse_kmp_available.rc | default(0) == 0
+    fail_msg: >-
+      {{ _suse_kernel_package }} is not available from any enabled
+      repository. Register SLES with SUSEConnect, or add a repository that
+      provides it. zypper: {{ _suse_kmp_available.msg | default('') }}
+  when: nvidia_driver_package_state != 'absent'
+
+- name: Read the kernel module version zypper would install
+  ansible.builtin.set_fact:
+    _suse_kmp_candidate: >-
+      {{ _suse_kmp_available.stdout | default('')
+      | regex_findall('name="' ~ _suse_kernel_package ~ '" edition="([0-9.]+)')
+      | first | default('') }}
+  when: nvidia_driver_package_state != 'absent'
+
+# The request is "older than the next branch", which an older branch also meets.
+- name: Check the kernel module candidate is from the requested branch
+  ansible.builtin.assert:
+    that:
+      - _suse_kmp_candidate.split('.')[0] == nvidia_driver_suse_branch | string
+    fail_msg: >-
+      No branch {{ nvidia_driver_suse_branch }} build of
+      {{ _suse_kernel_package }} is available; zypper would install
+      {{ _suse_kmp_candidate }}. Set nvidia_driver_suse_branch or
+      nvidia_driver_package_version to a version available for this system.
+  when:
+    - nvidia_driver_package_state != 'absent'
+    - not nvidia_driver_package_version | default('', true)
+    - _suse_kmp_candidate | length > 0
+
+- name: Blacklist nouveau
+  community.general.kernel_blacklist:
+    name: nouveau
+    state: present
+
+- name: Read the installed kernel module version before install
+  ansible.builtin.command:
+    argv: [rpm, -q, --qf, "%{VERSION}\n", "{{ _suse_kernel_package }}"]
+  register: _suse_kmp_before
+  changed_when: false
+  failed_when: _suse_kmp_before.rc not in [0, 1]
+  check_mode: false
+  when: nvidia_driver_package_state != 'absent'
+
+# zypper downgrades the module but not the user space it depends on.
+- name: Check the installed kernel module is not newer than the request
+  ansible.builtin.assert:
+    that:
+      - >-
+        _pin | length == 0
+        or _suse_kmp_before.stdout_lines | map('regex_replace', '_k.*$', '')
+        | select('version', _pin, '>') | list | length == 0
+      - >-
+        _pin | length > 0
+        or _suse_kmp_before.stdout_lines | map('regex_replace', '\..*$', '')
+        | map('int') | max <= nvidia_driver_suse_branch | int
+    fail_msg: >-
+      Installed {{ _suse_kernel_package }} is newer than {{ _request }}.
+      Remove it with nvidia_driver_package_state absent, then install
+      {{ _request }}.
+  vars:
+    _pin: >-
+      {{ nvidia_driver_package_version | default('', true)
+      | regex_replace('_k.*$', '') }}
+    _request: "{{ _pin if _pin | length > 0 else 'branch ' ~ nvidia_driver_suse_branch }}"
+  when:
+    - nvidia_driver_package_state != 'absent'
+    - _suse_kmp_before.rc == 0
+
+# DKMS builds against these; its dependency pulls the newest kernel's.
+- name: Install kernel headers for the running kernel
+  community.general.zypper:
+    name: "kernel-{{ _flavor }}-devel={{ _running_version }}"
+    state: present
+  environment: "{{ proxy_env | default({}) }}"
+  vars:
+    _flavor: "{{ nvidia_driver_suse_kernel_flavor }}"
+    _running_version: >-
+      {{ ansible_facts['kernel'] | regex_replace('-' ~ _flavor ~ '$', '') }}
+  when:
+    - not nvidia_driver_suse_signed_kmp | bool
+    - nvidia_driver_package_state != 'absent'
+
+# Without the pin, replacing an installed module lets zypper move its user
+# space to the newest CUDA repo release, whose kernel module requirement only
+# NVIDIA's DKMS package can meet.
+- name: Install kernel module package
+  community.general.zypper:
+    name: >-
+      {{ [_suse_kernel_package_request] + (['nvidia-common-G07=' ~ _suse_kmp_candidate]
+      if _suse_kmp_candidate and _suse_kmp_before.rc == 0 else []) }}
+    state: "{{ nvidia_driver_package_state }}"
+  register: _suse_install_kmp
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_package_state != 'absent'
+
+- name: Read the installed kernel module version
+  ansible.builtin.command:
+    argv: [rpm, -q, --qf, "%{VERSION}\n", "{{ _suse_kernel_package }}"]
+  register: _suse_kmp_installed
+  changed_when: false
+  failed_when: _suse_kmp_installed.rc not in [0, 1]
+  check_mode: false
+  when: nvidia_driver_package_state != 'absent'
+
+# User space is pinned to the module's version so a newer CUDA repo release
+# cannot pull in a different module.
+- name: Set driver version from the kernel module package
+  ansible.builtin.set_fact:
+    _suse_driver_version: >-
+      {{ _suse_kmp_installed.stdout_lines
+      | community.general.version_sort | last
+      | regex_replace('_k.*$', '') }}
+  when:
+    - nvidia_driver_package_state != 'absent'
+    - _suse_kmp_installed.rc == 0
+
+- name: Check the kernel module matches the driver branch
+  ansible.builtin.assert:
+    that:
+      - _suse_driver_version.split('.')[0] == nvidia_driver_suse_branch | string
+    fail_msg: >-
+      {{ _suse_kernel_package }} {{ _suse_driver_version }} is not from branch
+      {{ nvidia_driver_suse_branch }}. Set nvidia_driver_suse_branch or
+      nvidia_driver_package_version to a version available for this system.
+  when:
+    - _suse_driver_version is defined
+    - not nvidia_driver_package_version | default('', true)
+
+- name: Install driver user space packages
+  community.general.zypper:
+    name:
+      - "nvidia-compute-utils-G07={{ _suse_driver_version }}"
+      - "nvidia-persistenced={{ _suse_driver_version }}"
+    state: "{{ nvidia_driver_package_state }}"
+  register: _suse_install_userspace
+  environment: "{{ proxy_env | default({}) }}"
+  when: _suse_driver_version is defined
+
+- name: Remove driver packages
+  community.general.zypper:
+    name:
+      - nvidia-open-driver-G07-signed-cuda-kmp-default
+      - nvidia-open-driver-G07-signed-cuda-kmp-64kb
+      - nvidia-open-driver-G07
+      - nvidia-compute-utils-G07
+      - nvidia-compute-G07
+      - nvidia-common-G07
+      - nvidia-persistenced
+      - nvidia-modprobe
+    state: absent
+  register: _suse_remove
+  environment: "{{ proxy_env | default({}) }}"
+  when: nvidia_driver_package_state == 'absent'
+
+- name: Set install_driver.changed var for SUSE
+  ansible.builtin.debug:
+    msg: Driver installed for SUSE
+  register: install_driver
+  changed_when: >-
+    _suse_install_kmp is changed
+    or _suse_install_userspace is changed
+    or _suse_remove is changed
