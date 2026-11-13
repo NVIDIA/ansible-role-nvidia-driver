@@ -109,15 +109,31 @@ def test_availability_checked_after_repo_before_install():
     assert TASKS[check]["check_mode"] is True
 
 
-@pytest.mark.parametrize("flavor,accepted", [(f, True) for f in FLAVORS] + [("rt", False)])
-def test_platform_check_kernel_flavor(flavor, accepted):
+def _platform_check(flavor, transactional=False, signed=True):
     task = _task("Check the SUSE platform is supported")
     templar = _templar(
         task,
         ansible_facts={"distribution": "SLES", "distribution_major_version": "16"},
         nvidia_driver_suse_kernel_flavor=flavor,
+        nvidia_driver_suse_signed_kmp=signed,
+        _suse_transactional={"stat": {"exists": transactional}},
     )
-    assert all(_condition(templar, c) for c in task["ansible.builtin.assert"]["that"]) is accepted
+    return all(_condition(templar, c) for c in task["ansible.builtin.assert"]["that"])
+
+
+@pytest.mark.parametrize("flavor,accepted", [(f, True) for f in FLAVORS] + [("rt", False)])
+def test_platform_check_kernel_flavor(flavor, accepted):
+    assert _platform_check(flavor) is accepted
+
+
+@pytest.mark.parametrize("flavor,accepted", [("default", True), ("64kb", True), ("nvidia64kb", False)])
+def test_platform_check_transactional(flavor, accepted):
+    assert _platform_check(flavor, transactional=True) is accepted
+
+
+@pytest.mark.parametrize("flavor,accepted", [("default", True), ("64kb", True), ("nvidia64kb", False)])
+def test_platform_check_dkms(flavor, accepted):
+    assert _platform_check(flavor, signed=False) is accepted
 
 
 def test_removal_covers_every_flavor():

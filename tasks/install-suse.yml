@@ -1,4 +1,9 @@
 ---
+- name: Check whether transactional-update is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/transactional-update
+  register: _suse_transactional
+
 - name: Check the SUSE platform is supported
   ansible.builtin.assert:
     that:
@@ -7,9 +12,15 @@
       - >-
         nvidia_driver_package_state == 'absent'
         or nvidia_driver_suse_kernel_flavor in ['default', '64kb', 'nvidia64kb']
+      - >-
+        nvidia_driver_package_state == 'absent'
+        or nvidia_driver_suse_kernel_flavor != 'nvidia64kb'
+        or (nvidia_driver_suse_signed_kmp | bool
+        and not _suse_transactional.stat.exists)
     fail_msg: >-
       SUSE support covers SLES 16 and openSUSE Leap 16 with the default, 64kb
-      or nvidia64kb kernel.
+      or nvidia64kb kernel, nvidia64kb only with the signed module and without
+      transactional-update installed.
       Found {{ ansible_facts['distribution'] }}
       {{ ansible_facts['distribution_version'] }},
       kernel flavour {{ nvidia_driver_suse_kernel_flavor }}.
