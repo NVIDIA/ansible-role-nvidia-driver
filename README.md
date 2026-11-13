@@ -66,10 +66,10 @@ an incompatible older version.
 
 ### SUSE specific variables
 
-On SLES 16 and openSUSE Leap 16 the role installs SUSE's signed open kernel
-module package for the running kernel flavour and the driver user space from
-the NVIDIA CUDA repository, at the same version as the module. The kernel
-module package, or with DKMS the kernel headers, come from the SLES
+On SLES 16, SLES for NVIDIA 16.1 and openSUSE Leap 16 the role installs SUSE's
+signed open kernel module package for the running kernel flavour and the driver
+user space from the NVIDIA CUDA repository, at the same version as the module.
+The kernel module package, or with DKMS the kernel headers, come from the SLES
 repositories, so SLES must be registered with the SUSE Customer Center or get
 those repositories from SUSE Multi-Linux Manager or a mirror. The role fails
 early if the kernel module package for the requested branch is not available.
@@ -94,7 +94,9 @@ for the running kernel, so they must still be in the repositories; otherwise
 update the kernel and reboot first. With Secure Boot enabled, the DKMS module is
 signed with a local key that must be enrolled with `mokutil` at the console. On
 SLES 16.1 the 615 branch does not currently build through DKMS against the 16.1
-kernel; keep `nvidia_driver_suse_signed_kmp: true` there.
+kernel; keep `nvidia_driver_suse_signed_kmp: true` there. The `nvidia64kb`
+kernel is supported with the signed module only, not with DKMS and not where
+`transactional-update` is installed.
 
 ## Example playbook
 
@@ -129,8 +131,8 @@ Currently exercised by Molecule's container CI:
 
 SLES 16.0 and 16.1 use the same SUSE role path and NVIDIA repository as the
 openSUSE Leap scenario, but SLES itself is not directly exercised in CI. SLES
-for NVIDIA 16.1 (aarch64, `nvidia64kb` kernel) uses the same SUSE role path
-with NVIDIA's `suse16/sbsa` repository.
+for NVIDIA 16.1 uses the same SUSE role path with NVIDIA's aarch64 (`sbsa`)
+repository.
 
 Red Hat Enterprise Linux 8 and 9 use the same Red Hat-family role path and
 NVIDIA repositories as the Rocky Linux scenarios, but RHEL itself is not
