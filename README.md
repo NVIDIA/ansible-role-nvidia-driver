@@ -66,10 +66,10 @@ an incompatible older version.
 
 ### SUSE specific variables
 
-On SLES 16 and openSUSE Leap 16 the role installs SUSE's signed open kernel
-module package for the running kernel flavour and the driver user space from
-the NVIDIA CUDA repository, at the same version as the module. The kernel
-module package, or with DKMS the kernel headers, come from the SLES
+On SLES 16, SLES for NVIDIA 16.1 and openSUSE Leap 16 the role installs SUSE's
+signed open kernel module package for the running kernel flavour and the driver
+user space from the NVIDIA CUDA repository, at the same version as the module.
+The kernel module package, or with DKMS the kernel headers, come from the SLES
 repositories, so SLES must be registered with the SUSE Customer Center or get
 those repositories from SUSE Multi-Linux Manager or a mirror. The role fails
 early if the kernel module package for the requested branch is not available.
@@ -78,7 +78,7 @@ early if the kernel module package for the requested branch is not available.
 |----------------------------------------|---------------------------------------------------------------------------------------|-------------------------------------------------------------------|
 | `nvidia_driver_suse_branch`            | `"615"`                                                                               | Driver branch on SUSE hosts (does not follow `nvidia_driver_branch`) |
 | `nvidia_driver_suse_signed_kmp`        | `true`                                                                                | Install SUSE's signed kernel module; `false` installs NVIDIA's DKMS package |
-| `nvidia_driver_suse_kernel_flavor`     | `"{{ ansible_facts['kernel'].split('-') \| last }}"`                                  | Kernel flavour to install the driver for: `default` or `64kb` |
+| `nvidia_driver_suse_kernel_flavor`     | `"{{ ansible_facts['kernel'].split('-') \| last }}"`                                  | Kernel flavour to install the driver for: `default`, `64kb` or `nvidia64kb` |
 | `nvidia_driver_suse_cuda_repo_baseurl` | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/"`    | Base URL to use for CUDA repo                                     |
 | `nvidia_driver_suse_cuda_repo_gpgkey`  | `"https://developer.download.nvidia.com/compute/cuda/repos/{{ _suse_repo_dir }}/3A8B5622.pub"` | GPG key for the CUDA repo                                |
 
@@ -94,7 +94,9 @@ for the running kernel, so they must still be in the repositories; otherwise
 update the kernel and reboot first. With Secure Boot enabled, the DKMS module is
 signed with a local key that must be enrolled with `mokutil` at the console. On
 SLES 16.1 the 615 branch does not currently build through DKMS against the 16.1
-kernel; keep `nvidia_driver_suse_signed_kmp: true` there.
+kernel; keep `nvidia_driver_suse_signed_kmp: true` there. The `nvidia64kb`
+kernel is supported with the signed module only, not with DKMS and not where
+`transactional-update` is installed.
 
 ## Example playbook
 
@@ -128,7 +130,9 @@ Currently exercised by Molecule's container CI:
 * openSUSE Leap 16.0
 
 SLES 16.0 and 16.1 use the same SUSE role path and NVIDIA repository as the
-openSUSE Leap scenario, but SLES itself is not directly exercised in CI.
+openSUSE Leap scenario, but SLES itself is not directly exercised in CI. SLES
+for NVIDIA 16.1 uses the same SUSE role path with NVIDIA's aarch64 (`sbsa`)
+repository.
 
 Red Hat Enterprise Linux 8 and 9 use the same Red Hat-family role path and
 NVIDIA repositories as the Rocky Linux scenarios, but RHEL itself is not
