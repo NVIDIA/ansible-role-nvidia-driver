@@ -37,6 +37,7 @@ ROLE = Path(__file__).resolve().parent.parent
 TASKS = yaml.safe_load((ROLE / "tasks" / "install-suse.yml").read_text())
 VARS = yaml.safe_load((ROLE / "vars" / "main.yml").read_text())
 KMP = "nvidia-open-driver-G07-signed-cuda-kmp-default"
+FLAVORS = ("default", "64kb", "nvidia64kb")
 
 
 def _task(name):
@@ -108,10 +109,21 @@ def test_availability_checked_after_repo_before_install():
     assert TASKS[check]["check_mode"] is True
 
 
+@pytest.mark.parametrize("flavor,accepted", [(f, True) for f in FLAVORS] + [("rt", False)])
+def test_platform_check_kernel_flavor(flavor, accepted):
+    task = _task("Check the SUSE platform is supported")
+    templar = _templar(
+        task,
+        ansible_facts={"distribution": "SLES", "distribution_major_version": "16"},
+        nvidia_driver_suse_kernel_flavor=flavor,
+    )
+    assert all(_condition(templar, c) for c in task["ansible.builtin.assert"]["that"]) is accepted
+
+
 def test_removal_covers_every_flavor():
     (remove,) = [t for t in TASKS if t.get("name") == "Remove driver packages"]
     names = remove["community.general.zypper"]["name"]
-    for flavor in ("default", "64kb"):
+    for flavor in FLAVORS:
         assert f"nvidia-open-driver-G07-signed-cuda-kmp-{flavor}" in names
 
 
@@ -203,7 +215,7 @@ def test_dkms_headers_installed_before_module():
     assert "not nvidia_driver_suse_signed_kmp | bool" in TASKS[headers]["when"]
 
 
-@pytest.mark.parametrize("flavor", ["default", "64kb"])
+@pytest.mark.parametrize("flavor", FLAVORS)
 @pytest.mark.parametrize("signed,expected", [
     (True, "nvidia-open-driver-G07-signed-cuda-kmp-{flavor}"),
     (False, "nvidia-open-driver-G07"),
