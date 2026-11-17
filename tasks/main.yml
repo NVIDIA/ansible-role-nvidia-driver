@@ -7,11 +7,11 @@
 
 - name: ubuntu install tasks (canonical repos)
   include_tasks: install-ubuntu.yml
-  when: ansible_facts['distribution'] == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo)
+  when: ansible_facts['distribution'] == 'Ubuntu' and (not nvidia_driver_ubuntu_install_from_cuda_repo | bool)
 
 - name: ubuntu install tasks (CUDA repo)
   include_tasks: install-ubuntu-cuda-repo.yml
-  when: ansible_facts['distribution'] == 'Ubuntu' and nvidia_driver_ubuntu_install_from_cuda_repo
+  when: ansible_facts['distribution'] == 'Ubuntu' and nvidia_driver_ubuntu_install_from_cuda_repo | bool
 
 - name: redhat family install tasks
   include_tasks: install-redhat.yml
@@ -31,13 +31,13 @@
   copy:
     src: nvidia-persistenced-override.conf
     dest: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
-  when: nvidia_driver_persistence_mode_on
+  when: nvidia_driver_persistence_mode_on | bool
 
 - name: remove persistenced service override
   file:
     path: /etc/systemd/system/nvidia-persistenced.service.d/override.conf
     state: absent
-  when: not nvidia_driver_persistence_mode_on
+  when: not nvidia_driver_persistence_mode_on | bool
 
 - name: enable persistenced
   systemd:
@@ -53,4 +53,4 @@
 
 - name: reboot after driver install
   reboot:
-  when: install_driver.changed and not nvidia_driver_skip_reboot
+  when: install_driver.changed and not nvidia_driver_skip_reboot | bool
